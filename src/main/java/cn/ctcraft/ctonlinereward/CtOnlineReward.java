@@ -6,12 +6,16 @@ import cn.ctcraft.ctonlinereward.inventory.RewardSetInventoryMonitor;
 import cn.ctcraft.ctonlinereward.listner.InventoryMonitor;
 import cn.ctcraft.ctonlinereward.service.OnlineTimer;
 import cn.ctcraft.ctonlinereward.service.YamlService;
+import cn.ctcraft.ctonlinereward.utils.version;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
 
 import java.io.File;
+import java.util.List;
 import java.util.logging.Logger;
 
 public final class CtOnlineReward extends JavaPlugin {
@@ -46,6 +50,13 @@ public final class CtOnlineReward extends JavaPlugin {
             getLogger().warning("§e§l初始化Vault失败.");
         }
 
+        BukkitTask versionTask = new BukkitRunnable() {
+            @Override
+            public void run() {
+                List<String> versionMsg = version.getVersionMsg();
+                versionMsg.forEach(System.out::println);
+            }
+        }.runTaskAsynchronously(this);
 
         logger.info("§a§l● 在线奖励加载成功!");
 
@@ -96,5 +107,7 @@ public final class CtOnlineReward extends JavaPlugin {
     public void onDisable() {
 
     }
+
+
 
 }
