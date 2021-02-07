@@ -1,0 +1,39 @@
+name: '&c在线奖励菜单'
+slot: 27
+values:
+  10min:
+    name: '&a在线十分钟奖励'
+    type:
+      name: 'GLASS_BOTTLE'
+      #是否打开附魔  部分物品会出现问题，请提前测试
+      enchantment: true
+    lore:
+      - '&a&n十分钟在线奖励'
+    index: 10
+    mode: reward
+    rewardId: 10min
+    extend:
+      before:
+        name: '&7在线十分钟奖励[未激活]'
+        type:
+          name: 'GLASS_BOTTLE'
+          #是否打开附魔  部分物品会出现问题，请提前测试
+          enchantment: false
+        lore:
+          - '&7当前在线时间: &f&n%CtOnlineReward_onlineTime%分钟'
+      activation:
+        name: '&a在线十分钟奖励[待领取]'
+        type:
+          name: 'EXP_BOTTLE'
+          #是否打开附魔  部分物品会出现问题，请提前测试
+          enchantment: true
+        lore:
+          - '&a已达到领取条件,点击领取'
+      after:
+        name: '&c在线十分钟奖励[已领取]'
+        type:
+          name: 'GLASS_BOTTLE'
+          #是否打开附魔  部分物品会出现问题，请提前测试
+          enchantment: false
+        lore:
+          - '&a已经领取过了,明天再来吧!'

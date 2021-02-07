@@ -1,0 +1,9 @@
+version: ${project.version}
+
+Setting:
+  #菜单中物品默认材质
+  defaultItemType:
+    name: 'GLASS_BOTTLE'
+    #是否打开附魔  部分物品会出现问题，请提前测试
+    enchantment: false
+

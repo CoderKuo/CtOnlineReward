@@ -1,0 +1,7 @@
+name: CtOnlineReward
+version: ${project.version}
+main: cn.ctcraft.ctonlinereward.CtOnlineReward
+softdepend: [PlaceholderAPI,PlayerPoints,Vault]
+commands:
+  cor:
+    description: CtOnlineReward Main Command
