@@ -8,5 +8,7 @@
     OpCommands:
       - 'me 我领取了十分钟在线奖励'
     ConsoleCommands:
-      - 'me %cor_player%在%cor_world%世界领取了十分钟在线奖励!'
-  
+      - 'me %CtOnlineReward_player%在%CtOnlineReward_world%世界领取了十分钟在线奖励!'
+  economy:
+    money: 10
+    points: 0

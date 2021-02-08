@@ -9,6 +9,7 @@ import cn.ctcraft.ctonlinereward.service.PlayerDataService;
 import cn.ctcraft.ctonlinereward.service.RewardService;
 import cn.ctcraft.ctonlinereward.service.RewardStatus;
 import me.clip.placeholderapi.PlaceholderAPI;
+import org.black_ixx.playerpoints.PlayerPointsAPI;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -60,9 +61,11 @@ public class InventoryMonitor implements Listener {
                     boolean b = givePlayerItem(itemStackFromRewardId, player);
                     if(b){
                         executeCommand(rewardEntity.getRewardID(),player);
+
                         PlayerDataService playerDataService = PlayerDataService.getInstance();
                         boolean b1 = playerDataService.addRewardToPlayData(rewardEntity.getRewardID(), player);
                         if(b1){
+                            giveMoney(player,rewardEntity.getRewardID());
                             player.sendMessage("§a§l● 奖励领取成功!");
                             Inventory build = InventoryFactory.build("menu.yml", player);
                             player.openInventory(build);
@@ -77,6 +80,30 @@ public class InventoryMonitor implements Listener {
             }
         }
 
+    }
+
+    private void giveMoney(Player player,String rewardID){
+        YamlConfiguration rewardYaml = YamlData.rewardYaml;
+        Set<String> rewardYamlKeys = rewardYaml.getKeys(false);
+        if(rewardYamlKeys.contains(rewardID)){
+            return;
+        }
+        ConfigurationSection rewardIdYaml = rewardYaml.getConfigurationSection(rewardID);
+        Set<String> rewardIdYamlKeys = rewardIdYaml.getKeys(false);
+        if(!rewardIdYamlKeys.contains("economy")){
+            return;
+        }
+        ConfigurationSection economy = rewardIdYaml.getConfigurationSection("economy");
+        Set<String> keys = economy.getKeys(false);
+        if(keys.contains("money")){
+            double money = economy.getDouble("money");
+            CtOnlineReward.economy.depositPlayer(player,money);
+        }
+        if(keys.contains("points")){
+            int points = economy.getInt("points");
+            PlayerPointsAPI playerPointsAPI = new PlayerPointsAPI(ctOnlineReward.getPlayerPoints());
+            playerPointsAPI.give(player.getUniqueId(),points);
+        }
     }
 
     private void executeCommand(String rewardID,Player player){

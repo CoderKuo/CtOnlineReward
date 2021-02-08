@@ -8,6 +8,7 @@ import cn.ctcraft.ctonlinereward.service.OnlineTimer;
 import cn.ctcraft.ctonlinereward.service.YamlService;
 import cn.ctcraft.ctonlinereward.utils.version;
 import net.milkbowl.vault.economy.Economy;
+import org.black_ixx.playerpoints.PlayerPoints;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -19,7 +20,7 @@ import java.util.List;
 import java.util.logging.Logger;
 
 public final class CtOnlineReward extends JavaPlugin {
-    private static Economy economy = null;
+    public static Economy economy = null;
 
     @Override
     public void onEnable() {
@@ -57,6 +58,8 @@ public final class CtOnlineReward extends JavaPlugin {
                 versionMsg.forEach(System.out::println);
             }
         }.runTaskAsynchronously(this);
+
+        Metrics metrics = new Metrics(this);
 
         logger.info("§a§l● 在线奖励加载成功!");
 
@@ -101,6 +104,8 @@ public final class CtOnlineReward extends JavaPlugin {
         if(b2){
             logger.info("§a§l● 奖励配置文件加载成功!");
         }
+
+        saveResource("rewardData/10min",false);
     }
 
     @Override
@@ -108,6 +113,7 @@ public final class CtOnlineReward extends JavaPlugin {
 
     }
 
+    public PlayerPoints getPlayerPoints(){return (PlayerPoints) Bukkit.getPluginManager().getPlugin("PlayerPoints");}
 
 
 }

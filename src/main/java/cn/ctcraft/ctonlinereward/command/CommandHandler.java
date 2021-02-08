@@ -41,8 +41,9 @@ public class CommandHandler implements CommandExecutor {
             if(args[0].equalsIgnoreCase("open")){
                 commandExecute.openInventory(sender,args);
             }
-            if(args[0].equalsIgnoreCase("reload") && args.length == 1){
+            if(args[0].equalsIgnoreCase("reload") && args.length == 1 && sender.hasPermission("CtOnlineReward.reload")){
                 reload();
+                sender.sendMessage("§c§l重载成功!");
             }
         }
 

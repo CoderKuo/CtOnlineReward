@@ -32,7 +32,6 @@ public class YamlService {
                 ctOnlineReward.saveResource("gui/menu.yml", false);
                 ctOnlineReward.getLogger().info("§a§l● GUI文件夹构建成功!");
             }
-            return false;
         }
         File[] files = file.listFiles((File pathname) -> pathname.getName().contains(".yml"));
         if (files == null) {
@@ -42,7 +41,6 @@ public class YamlService {
         for (File file1 : files) {
             YamlConfiguration yamlConfiguration = new YamlConfiguration();
             yamlConfiguration.load(file1);
-            System.out.println(file1.toString());
             guiYaml.put(file1.getName(), yamlConfiguration);
         }
 
@@ -50,6 +48,7 @@ public class YamlService {
         if (!b) {
             ctOnlineReward.getLogger().warning("§c§l■ 未找到menu.yml菜单文件,即将自动生成菜单文件!");
             ctOnlineReward.saveResource("gui/menu.yml", false);
+            loadGuiYaml();
         }
 
 

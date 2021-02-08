@@ -29,11 +29,11 @@ public class version {
         versionMsg.add("§6===========[CtOnlineReward]============");
         if(plugin.getDescription().getVersion().equalsIgnoreCase(version)){
             versionMsg.add("欢迎您使用CtOnlineReward最新版本! 版本号:"+version);
-            versionMsg.add("§6==============================");
+            versionMsg.add("§6=======================================");
             return versionMsg;
         }
         versionMsg.add("CtOnlineReward不是最新版本!最新版本: §b"+version+"§6!你的版本: §b"+ plugin.getDescription().getVersion());
-        versionMsg.add("§6==============================");
+        versionMsg.add("§6=======================================");
         return versionMsg;
     }
 }
