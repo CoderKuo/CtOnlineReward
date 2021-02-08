@@ -37,3 +37,29 @@ values:
           enchantment: false
         lore:
           - '&a已经领取过了,明天再来吧!'
+  spawn:
+    name: '&c&l点击回城'
+    type:
+      name: 'STONE'
+      #是否打开附魔  部分物品会出现问题，请提前测试
+      enchantment: true
+    lore: '&e&l这是一个执行命令示例'
+    index: 12
+    mode: command
+    command:
+      PlayerCommands:
+        - 'say 我点击了回城'
+      OpCommands:
+        - 'me 我点击了回城'
+      ConsoleCommands:
+        - 'me %CtOnlineReward_player%在%CtOnlineReward_world%世界点击了回城!'
+  menu:
+    name: '&c&l打开菜单'
+    type:
+      name: 'WOOD_PICKAXE'
+      #是否打开附魔  部分物品会出现问题，请提前测试
+      enchantment: true
+    lore: '&e&l这是一个打开GUI示例'
+    index: 12
+    mode: gui
+    gui: 'extendMenu.yml'

@@ -12,3 +12,5 @@
   economy:
     money: 10
     points: 0
+  #领取奖励时播放的音效(可选)
+  sound: 'ENTITY_PLAYER_LEVELUP'

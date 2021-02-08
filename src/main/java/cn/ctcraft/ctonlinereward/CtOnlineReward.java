@@ -105,7 +105,10 @@ public final class CtOnlineReward extends JavaPlugin {
             logger.info("§a§l● 奖励配置文件加载成功!");
         }
 
-        saveResource("rewardData/10min",false);
+        File rewardData = new File(getDataFolder() + "/rewardData");
+        if(!rewardData.exists()){
+            saveResource("rewardData/10min",false);
+        }
     }
 
     @Override

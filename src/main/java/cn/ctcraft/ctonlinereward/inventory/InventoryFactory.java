@@ -40,7 +40,10 @@ public class InventoryFactory {
             ctOnlineReward.getLogger().warning("§c§l■ 玩家数据文件获取失败!");
         }
         Map<String, YamlConfiguration> guiYaml = YamlData.guiYaml;
-
+        if(!guiYaml.containsKey(inventoryId)){
+            player.sendMessage("§c§l菜单不存在!");
+            player.closeInventory();
+        }
         YamlConfiguration yamlConfiguration = guiYaml.get(inventoryId);
         String name = yamlConfiguration.getString("name");
         int size = yamlConfiguration.getInt("slot");
@@ -56,14 +59,41 @@ public class InventoryFactory {
             ConfigurationSection value = values.getConfigurationSection(key);
             ItemStack valueItemStack = getValueItemStack(value);
             Set<String> keys1 = value.getKeys(false);
+
             if(keys1.contains("index")){
                 int index = value.getInt("index");
                 inventory.setItem(index,valueItemStack);
-                RewardEntity rewardEntity = map.get(valueItemStack);
-                Map<Integer, RewardEntity> statusMap = mainInventoryHolder.statusMap;
-                statusMap.put(index,rewardEntity);
+                if(keys1.contains("mode")){
+                    String mode = value.getString("mode");
+                    Map<Integer, String> modeMap = mainInventoryHolder.modeMap;
+                    modeMap.put(index,mode);
+                    if(mode.equalsIgnoreCase("reward")){
+                        RewardEntity rewardEntity = map.get(valueItemStack);
+                        Map<Integer, RewardEntity> statusMap = mainInventoryHolder.statusMap;
+                        statusMap.put(index,rewardEntity);
+                    }
+                    if(mode.equalsIgnoreCase("command")){
+                        YamlConfiguration itemStackCommand = getItemStackCommand(value);
+                        mainInventoryHolder.commandMap.put(index,itemStackCommand);
+                    }
+                    if(mode.equalsIgnoreCase("gui")){
+                        if(keys1.contains("gui")){
+                            mainInventoryHolder.guiMap.put(index,value.getString("gui"));
+                        }
+                    }
+                }
+
             }
+
         }
+    }
+
+    private YamlConfiguration getItemStackCommand(ConfigurationSection value){
+        Set<String> keys = value.getKeys(false);
+        if(!keys.contains("command")){
+            return null;
+        }
+        return (YamlConfiguration) value.getConfigurationSection("command");
     }
 
     private ItemStack getValueItemStack(ConfigurationSection value) {
@@ -80,6 +110,7 @@ public class InventoryFactory {
                 extendHandler(itemStack,value,value.getString("rewardId"));
             }
         }
+
         return itemStack;
     }
 

@@ -30,6 +30,7 @@ public class YamlService {
             boolean mkdir = file.mkdir();
             if (mkdir) {
                 ctOnlineReward.saveResource("gui/menu.yml", false);
+                ctOnlineReward.saveResource("gui/extendMenu.yml",false);
                 ctOnlineReward.getLogger().info("§a§l● GUI文件夹构建成功!");
             }
         }

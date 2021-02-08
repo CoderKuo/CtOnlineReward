@@ -11,6 +11,7 @@ import cn.ctcraft.ctonlinereward.service.RewardStatus;
 import me.clip.placeholderapi.PlaceholderAPI;
 import org.black_ixx.playerpoints.PlayerPointsAPI;
 import org.bukkit.Bukkit;
+import org.bukkit.Sound;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.HumanEntity;
@@ -46,40 +47,112 @@ public class InventoryMonitor implements Listener {
             return;
         }
         e.setCancelled(true);
-        if (e.getRawSlot() < 0 || e.getRawSlot() > e.getInventory().getSize() || e.getInventory() == null) {
+        int rawSlot = e.getRawSlot();
+        if (rawSlot < 0 || rawSlot > e.getInventory().getSize() || e.getInventory() == null) {
             return;
         }
-        Map<Integer, RewardEntity> statusMap = ((MainInventoryHolder) holder).statusMap;
-        if(statusMap.containsKey(e.getRawSlot())){
-            RewardEntity rewardEntity = statusMap.get(e.getRawSlot());
-            if(rewardEntity.getStatus() == RewardStatus.activation){
-                try {
-                    Player player = (Player) e.getWhoClicked();
-                    player.playSound(player.getLocation(),ENTITY_PLAYER_LEVELUP ,1F,1F);
+        MainInventoryHolder mainInventoryHolder = (MainInventoryHolder) holder;
+        Map<Integer, RewardEntity> statusMap = mainInventoryHolder.statusMap;
+        Player player = (Player) e.getWhoClicked();
+        if(statusMap.containsKey(rawSlot)){
+            rewardExecute(statusMap.get(rawSlot), player);
+        }
+        Map<Integer, YamlConfiguration> commandMap = mainInventoryHolder.commandMap;
+        if(commandMap.containsKey(rawSlot)){
+            commandExecute(commandMap.get(rawSlot),player);
+        }
+        Map<Integer, String> guiMap = mainInventoryHolder.guiMap;
+        if(guiMap.containsKey(rawSlot)){
+            guiExecute(guiMap.get(rawSlot),player);
+        }
 
-                    List<ItemStack> itemStackFromRewardId = rewardService.getItemStackFromRewardId(rewardEntity.getRewardID());
-                    boolean b = givePlayerItem(itemStackFromRewardId, player);
-                    if(b){
-                        executeCommand(rewardEntity.getRewardID(),player);
+    }
 
-                        PlayerDataService playerDataService = PlayerDataService.getInstance();
-                        boolean b1 = playerDataService.addRewardToPlayData(rewardEntity.getRewardID(), player);
-                        if(b1){
-                            giveMoney(player,rewardEntity.getRewardID());
-                            player.sendMessage("§a§l● 奖励领取成功!");
-                            Inventory build = InventoryFactory.build("menu.yml", player);
-                            player.openInventory(build);
-                        }
-                    }
+    private void guiExecute(String gui,Player player){
+        Inventory build = InventoryFactory.build(gui, player);
+        player.openInventory(build);
+    }
 
-
-                }catch (Exception ex){
-                    ctOnlineReward.getLogger().warning("§c§l■ 奖励配置异常!");
-                    ex.printStackTrace();
+    private void commandExecute(YamlConfiguration command,Player player){
+        Set<String> keys = command.getKeys(false);
+        if(keys.contains("PlayerCommands")){
+            List<String> playerCommands = command.getStringList("PlayerCommands");
+            List<String> list = PlaceholderAPI.setPlaceholders(player, playerCommands);
+            for (String s : list) {
+                player.performCommand(s);
+            }
+        }
+        if(keys.contains("OpCommands")){
+            List<String> opCommands = command.getStringList("OpCommands");
+            List<String> list1 = PlaceholderAPI.setPlaceholders(player, opCommands);
+            boolean isOp = player.isOp();
+            try {
+                player.setOp(true);
+                for (String c : list1) {
+                    player.performCommand(c);
                 }
+            } finally {
+                player.setOp(isOp);
+            }
+        }
+        if(keys.contains("ConsoleCommands")){
+            List<String> consoleCommands = command.getStringList("ConsoleCommands");
+            List<String> list2 = PlaceholderAPI.setPlaceholders(player, consoleCommands);
+            for (String s : list2) {
+                Bukkit.dispatchCommand(Bukkit.getConsoleSender(),s);
             }
         }
 
+    }
+
+    private void rewardExecute(RewardEntity rewardEntity,Player player){
+        if(rewardEntity.getStatus() == RewardStatus.activation){
+            try {
+                Sound sound = getSound(rewardEntity.getRewardID());
+                if(sound!=null){
+                    player.playSound(player.getLocation(),sound ,1F,1F);
+                }
+
+                List<ItemStack> itemStackFromRewardId = rewardService.getItemStackFromRewardId(rewardEntity.getRewardID());
+                boolean b = givePlayerItem(itemStackFromRewardId, player);
+                if(b){
+                    executeCommand(rewardEntity.getRewardID(),player);
+
+                    PlayerDataService playerDataService = PlayerDataService.getInstance();
+                    boolean b1 = playerDataService.addRewardToPlayData(rewardEntity.getRewardID(), player);
+                    if(b1){
+                        giveMoney(player,rewardEntity.getRewardID());
+                        player.sendMessage("§a§l● 奖励领取成功!");
+                        Inventory build = InventoryFactory.build("menu.yml", player);
+                        player.openInventory(build);
+                    }
+                }
+
+
+            }catch (Exception ex){
+                ctOnlineReward.getLogger().warning("§c§l■ 奖励配置异常!");
+                ex.printStackTrace();
+            }
+        }
+    }
+
+    private Sound getSound(String rewardID){
+        YamlConfiguration rewardYaml = YamlData.rewardYaml;
+        Set<String> rewardYamlKeys = rewardYaml.getKeys(false);
+        if(rewardYamlKeys.contains(rewardID)){
+            return null;
+        }
+        ConfigurationSection rewardIdYaml = rewardYaml.getConfigurationSection(rewardID);
+        Set<String> rewardIdYamlKeys = rewardIdYaml.getKeys(false);
+        if(!rewardIdYamlKeys.contains("sound")){
+            return null;
+        }
+        String sound = rewardIdYaml.getString("sound");
+        try {
+            return Sound.valueOf(sound);
+        }catch (IllegalArgumentException e){
+            return null;
+        }
     }
 
     private void giveMoney(Player player,String rewardID){
