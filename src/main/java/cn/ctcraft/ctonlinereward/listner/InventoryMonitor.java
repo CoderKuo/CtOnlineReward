@@ -57,9 +57,10 @@ public class InventoryMonitor implements Listener {
         if(statusMap.containsKey(rawSlot)){
             rewardExecute(statusMap.get(rawSlot), player);
         }
-        Map<Integer, YamlConfiguration> commandMap = mainInventoryHolder.commandMap;
+        Map<Integer, ConfigurationSection> commandMap = mainInventoryHolder.commandMap;
         if(commandMap.containsKey(rawSlot)){
             commandExecute(commandMap.get(rawSlot),player);
+            player.closeInventory();
         }
         Map<Integer, String> guiMap = mainInventoryHolder.guiMap;
         if(guiMap.containsKey(rawSlot)){
@@ -73,7 +74,7 @@ public class InventoryMonitor implements Listener {
         player.openInventory(build);
     }
 
-    private void commandExecute(YamlConfiguration command,Player player){
+    private void commandExecute(ConfigurationSection command,Player player){
         Set<String> keys = command.getKeys(false);
         if(keys.contains("PlayerCommands")){
             List<String> playerCommands = command.getStringList("PlayerCommands");
@@ -139,7 +140,7 @@ public class InventoryMonitor implements Listener {
     private Sound getSound(String rewardID){
         YamlConfiguration rewardYaml = YamlData.rewardYaml;
         Set<String> rewardYamlKeys = rewardYaml.getKeys(false);
-        if(rewardYamlKeys.contains(rewardID)){
+        if(!rewardYamlKeys.contains(rewardID)){
             return null;
         }
         ConfigurationSection rewardIdYaml = rewardYaml.getConfigurationSection(rewardID);

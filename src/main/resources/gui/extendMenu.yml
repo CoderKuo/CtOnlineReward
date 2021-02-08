@@ -2,13 +2,13 @@ name: '&e&l这是一个拓展菜单'
 slot: 54
 values:
   backup:
-    menu:
-      name: '&c&l返回主菜单'
-      type:
-        name: 'TNT'
-        #是否打开附魔  部分物品会出现问题，请提前测试
-        enchantment: true
-      lore: '&e&l返回主菜单'
-      index: 12
-      mode: gui
-      gui: 'menu.yml'
+    name: '&c&l返回主菜单'
+    type:
+      name: 'TNT'
+      #是否打开附魔  部分物品会出现问题，请提前测试
+      enchantment: true
+    lore:
+      - '&e&l返回主菜单'
+    index: 12
+    mode: gui
+    gui: 'menu.yml'

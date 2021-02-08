@@ -43,7 +43,8 @@ values:
       name: 'STONE'
       #是否打开附魔  部分物品会出现问题，请提前测试
       enchantment: true
-    lore: '&e&l这是一个执行命令示例'
+    lore:
+      - '&e&l这是一个执行命令示例'
     index: 12
     mode: command
     command:
@@ -59,7 +60,8 @@ values:
       name: 'WOOD_PICKAXE'
       #是否打开附魔  部分物品会出现问题，请提前测试
       enchantment: true
-    lore: '&e&l这是一个打开GUI示例'
-    index: 12
+    lore:
+      - '&e&l这是一个打开GUI示例'
+    index: 14
     mode: gui
     gui: 'extendMenu.yml'

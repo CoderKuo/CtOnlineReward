@@ -25,15 +25,15 @@ public class OnlineTimer extends BukkitRunnable {
     @Override
     public void run() {
         Collection<? extends Player> onlinePlayers = Bukkit.getServer().getOnlinePlayers();
+        YamlConfiguration playerData = YamlData.playerData;
         for (Player player : onlinePlayers) {
             boolean b = yamlService.loadPlayerDataYaml();
             if(!b){
                 ctOnlineReward.getLogger().warning("§c§l■ 玩家数据文件获取失败!");
             }
-            YamlConfiguration playerData = YamlData.playerData;
             int anInt = playerData.getInt(player.getUniqueId().toString()+".time");
             playerData.set(player.getUniqueId().toString()+".time",anInt+1);
-            yamlService.saveData(playerData);
         }
+        yamlService.saveData(playerData);
     }
 }

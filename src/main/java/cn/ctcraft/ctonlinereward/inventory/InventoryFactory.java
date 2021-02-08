@@ -73,8 +73,8 @@ public class InventoryFactory {
                         statusMap.put(index,rewardEntity);
                     }
                     if(mode.equalsIgnoreCase("command")){
-                        YamlConfiguration itemStackCommand = getItemStackCommand(value);
-                        mainInventoryHolder.commandMap.put(index,itemStackCommand);
+                        ConfigurationSection configurationSection = getItemStackCommand(value);
+                        mainInventoryHolder.commandMap.put(index,configurationSection);
                     }
                     if(mode.equalsIgnoreCase("gui")){
                         if(keys1.contains("gui")){
@@ -88,12 +88,12 @@ public class InventoryFactory {
         }
     }
 
-    private YamlConfiguration getItemStackCommand(ConfigurationSection value){
+    private ConfigurationSection getItemStackCommand(ConfigurationSection value){
         Set<String> keys = value.getKeys(false);
         if(!keys.contains("command")){
             return null;
         }
-        return (YamlConfiguration) value.getConfigurationSection("command");
+        return value.getConfigurationSection("command");
     }
 
     private ItemStack getValueItemStack(ConfigurationSection value) {
@@ -101,6 +101,7 @@ public class InventoryFactory {
         ItemStack itemStack = getItemStackType(null, value);
         ItemMeta itemMeta = itemStack.hasItemMeta() ? itemStack.getItemMeta() : Bukkit.getItemFactory().getItemMeta(itemStack.getType());
         itemMetaHandler(value,itemMeta);
+        itemStack.setItemMeta(itemMeta);
         if(!keys.contains("mode")){
             return itemStack;
         }
@@ -113,6 +114,7 @@ public class InventoryFactory {
 
         return itemStack;
     }
+
 
     private void extendHandler(ItemStack itemStack,ConfigurationSection value,String rewardId) {
         Set<String> keys = value.getKeys(false);

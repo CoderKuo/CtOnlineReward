@@ -76,6 +76,7 @@ public final class CtOnlineReward extends JavaPlugin {
         if (!file.exists()) {
             boolean mkdir = file.mkdir();
             if (mkdir) {
+                saveResource("rewardData/10min",false);
                 logger.info("§a§l● 奖励目录构建完成!");
             } else {
                 logger.warning("§c§l■ 奖励目录构建失败,插件即将关闭!");
@@ -105,10 +106,6 @@ public final class CtOnlineReward extends JavaPlugin {
             logger.info("§a§l● 奖励配置文件加载成功!");
         }
 
-        File rewardData = new File(getDataFolder() + "/rewardData");
-        if(!rewardData.exists()){
-            saveResource("rewardData/10min",false);
-        }
     }
 
     @Override
