@@ -1,6 +1,7 @@
 package cn.ctcraft.ctonlinereward.service;
 
 import cn.ctcraft.ctonlinereward.CtOnlineReward;
+import cn.ctcraft.ctonlinereward.database.DataService;
 import cn.ctcraft.ctonlinereward.database.YamlData;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -13,7 +14,7 @@ import java.util.Collection;
 
 public class OnlineTimer extends BukkitRunnable {
     private static OnlineTimer instance = new OnlineTimer();
-    private YamlService yamlService = YamlService.getInstance();
+    private DataService dataService = CtOnlineReward.dataService;
     private CtOnlineReward ctOnlineReward = CtOnlineReward.getPlugin(CtOnlineReward.class);
     private OnlineTimer(){
     }
@@ -25,15 +26,9 @@ public class OnlineTimer extends BukkitRunnable {
     @Override
     public void run() {
         Collection<? extends Player> onlinePlayers = Bukkit.getServer().getOnlinePlayers();
-        YamlConfiguration playerData = YamlData.playerData;
         for (Player player : onlinePlayers) {
-            boolean b = yamlService.loadPlayerDataYaml();
-            if(!b){
-                ctOnlineReward.getLogger().warning("§c§l■ 玩家数据文件获取失败!");
-            }
-            int anInt = playerData.getInt(player.getUniqueId().toString()+".time");
-            playerData.set(player.getUniqueId().toString()+".time",anInt+1);
+            int playerOnlineTime = dataService.getPlayerOnlineTime(player);
+            dataService.addPlayerOnlineTime(player,playerOnlineTime+1);
         }
-        yamlService.saveData(playerData);
     }
 }

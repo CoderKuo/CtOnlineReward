@@ -1,6 +1,7 @@
 package cn.ctcraft.ctonlinereward.inventory;
 
 import cn.ctcraft.ctonlinereward.service.RewardService;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -46,7 +47,7 @@ public class RewardSetInventoryMonitor implements Listener {
             String reward = ((RewardSetInventoryHolder) holder).getReward();
             boolean b = rewardService.saveRewardDate(itemStacks, reward);
             if(b){
-                e.getWhoClicked().sendMessage("§a§l● "+reward+"奖励数据保存成功!");
+                ((Player)e.getWhoClicked()).sendMessage("§a§l● "+reward+"奖励数据保存成功!");
             }
             e.getWhoClicked().closeInventory();
         }

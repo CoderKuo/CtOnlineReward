@@ -1,13 +1,13 @@
 package cn.ctcraft.ctonlinereward;
 
-import cn.ctcraft.ctonlinereward.service.PlayerDataService;
+import cn.ctcraft.ctonlinereward.database.DataService;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 public class Placeholder extends PlaceholderExpansion {
     private CtOnlineReward ctOnlineReward = CtOnlineReward.getPlugin(CtOnlineReward.class);
-    private PlayerDataService playerDataService = PlayerDataService.getInstance();
+    private DataService playerDataService = CtOnlineReward.dataService;
     private static Placeholder instance = new Placeholder();
     private Placeholder(){
         

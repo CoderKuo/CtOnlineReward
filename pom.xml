@@ -6,7 +6,7 @@
 
     <groupId>cn.ctcraft</groupId>
     <artifactId>CtOnlineReward</artifactId>
-    <version>0.0.2</version>
+    <version>0.0.3</version>
     <packaging>jar</packaging>
 
     <name>CtOnlineReward</name>
@@ -93,6 +93,12 @@
             <version>1.0</version>
             <scope>system</scope>
             <systemPath>${basedir}/PlayerPoints.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>com.zaxxer</groupId>
+            <artifactId>HikariCP</artifactId>
+            <version>3.4.5</version>
+            <scope>compile</scope>
         </dependency>
     </dependencies>
 </project>

@@ -1,26 +1,34 @@
 package cn.ctcraft.ctonlinereward;
 
 import cn.ctcraft.ctonlinereward.command.CommandHandler;
-import cn.ctcraft.ctonlinereward.database.YamlData;
+import cn.ctcraft.ctonlinereward.database.*;
 import cn.ctcraft.ctonlinereward.inventory.RewardSetInventoryMonitor;
 import cn.ctcraft.ctonlinereward.listner.InventoryMonitor;
 import cn.ctcraft.ctonlinereward.service.OnlineTimer;
 import cn.ctcraft.ctonlinereward.service.YamlService;
 import cn.ctcraft.ctonlinereward.utils.version;
+import com.zaxxer.hikari.HikariDataSource;
 import net.milkbowl.vault.economy.Economy;
 import org.black_ixx.playerpoints.PlayerPoints;
 import org.bukkit.Bukkit;
+import org.bukkit.configuration.InvalidConfigurationException;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 import java.util.logging.Logger;
 
 public final class CtOnlineReward extends JavaPlugin {
     public static Economy economy = null;
+    public static DataService dataService;
+    public static HikariCPBase hikariCPBase;
+    public static YamlConfiguration lang;
+    public static LanguageHandler languageHandler;
 
     @Override
     public void onEnable() {
@@ -32,7 +40,31 @@ public final class CtOnlineReward extends JavaPlugin {
 
         load();
 
-        OnlineTimer.getInstance().runTaskTimerAsynchronously(this,1200,1200);
+
+
+        BukkitTask versionTask = new BukkitRunnable() {
+            @Override
+            public void run() {
+                List<String> versionMsg = version.getVersionMsg();
+                versionMsg.forEach(System.out::println);
+            }
+        }.runTaskAsynchronously(this);
+
+        Metrics metrics = new Metrics(this);
+
+        String databaseType = getConfig().getString("database.type");
+        if(databaseType.equalsIgnoreCase("yaml")){
+            dataService = new YamlBase();
+        }else if (databaseType.equalsIgnoreCase("mysql")){
+            hikariCPBase = new HikariCPBase();
+            dataService = new MysqlBase();
+        }else if(databaseType.equalsIgnoreCase("SQLite")){
+            hikariCPBase = new HikariCPBase();
+            dataService = new SQLiteBase();
+        }else{
+            dataService = new YamlBase();
+        }
+
 
         if(Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")){
             Placeholder.getInstance().register();
@@ -51,15 +83,18 @@ public final class CtOnlineReward extends JavaPlugin {
             getLogger().warning("§e§l初始化Vault失败.");
         }
 
-        BukkitTask versionTask = new BukkitRunnable() {
-            @Override
-            public void run() {
-                List<String> versionMsg = version.getVersionMsg();
-                versionMsg.forEach(System.out::println);
-            }
-        }.runTaskAsynchronously(this);
+        YamlConfiguration yamlConfiguration = new YamlConfiguration();
+        try {
+            yamlConfiguration.load(getDataFolder()+"/lang.yml");
+        } catch (IOException | InvalidConfigurationException e) {
+            throw new RuntimeException("§c§l■ lang.yml文件加载失败!",e);
+        }
+        lang = yamlConfiguration;
 
-        Metrics metrics = new Metrics(this);
+        languageHandler = new LanguageHandler();
+
+        OnlineTimer.getInstance().runTaskTimerAsynchronously(this,1200,1200);
+
 
         logger.info("§a§l● 在线奖励加载成功!");
 
@@ -97,10 +132,11 @@ public final class CtOnlineReward extends JavaPlugin {
             e.printStackTrace();
         }
 
-        boolean b1 = yamlService.loadPlayerDataYaml();
-        if(b1){
-            logger.info("§a§l● 玩家配置文件加载成功!");
+        File langFile = new File(getDataFolder() + "/lang.yml");
+        if (!langFile.exists()){
+            saveResource("lang.yml",false);
         }
+
         boolean b2 = yamlService.loadRewardYaml();
         if(b2){
             logger.info("§a§l● 奖励配置文件加载成功!");

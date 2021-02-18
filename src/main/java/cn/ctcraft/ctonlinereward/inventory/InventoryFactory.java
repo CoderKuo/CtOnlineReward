@@ -2,8 +2,8 @@ package cn.ctcraft.ctonlinereward.inventory;
 
 import cn.ctcraft.ctonlinereward.CtOnlineReward;
 import cn.ctcraft.ctonlinereward.RewardEntity;
+import cn.ctcraft.ctonlinereward.database.DataService;
 import cn.ctcraft.ctonlinereward.database.YamlData;
-import cn.ctcraft.ctonlinereward.service.PlayerDataService;
 import cn.ctcraft.ctonlinereward.service.RewardStatus;
 import cn.ctcraft.ctonlinereward.service.YamlService;
 import me.clip.placeholderapi.PlaceholderAPI;
@@ -201,7 +201,7 @@ public class InventoryFactory {
             return RewardStatus.before;
         }
         int time = configurationSection.getInt("time");
-        PlayerDataService playerDataService = PlayerDataService.getInstance();
+        DataService playerDataService = CtOnlineReward.dataService;
         int playerOnlineTime = playerDataService.getPlayerOnlineTime(player);
         if(playerOnlineTime < time) {
             return RewardStatus.before;

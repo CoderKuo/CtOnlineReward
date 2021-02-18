@@ -2,6 +2,7 @@ package cn.ctcraft.ctonlinereward.service;
 
 import cn.ctcraft.ctonlinereward.CtOnlineReward;
 import cn.ctcraft.ctonlinereward.database.YamlData;
+import cn.ctcraft.ctonlinereward.utils.Util;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
 
@@ -122,9 +123,7 @@ public class YamlService {
                 return null;
             }
         }
-        long timeStamp = System.currentTimeMillis();
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyyMMdd");
-        String format = simpleDateFormat.format(timeStamp);
-        return new File(dataFolder + "/" + format + ".yml");
+        String date = Util.getDate();
+        return new File(dataFolder + "/" + date + ".yml");
     }
 }

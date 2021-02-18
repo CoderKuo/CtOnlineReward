@@ -2,10 +2,10 @@ package cn.ctcraft.ctonlinereward.listner;
 
 import cn.ctcraft.ctonlinereward.CtOnlineReward;
 import cn.ctcraft.ctonlinereward.RewardEntity;
+import cn.ctcraft.ctonlinereward.database.DataService;
 import cn.ctcraft.ctonlinereward.database.YamlData;
 import cn.ctcraft.ctonlinereward.inventory.InventoryFactory;
 import cn.ctcraft.ctonlinereward.inventory.MainInventoryHolder;
-import cn.ctcraft.ctonlinereward.service.PlayerDataService;
 import cn.ctcraft.ctonlinereward.service.RewardService;
 import cn.ctcraft.ctonlinereward.service.RewardStatus;
 import me.clip.placeholderapi.PlaceholderAPI;
@@ -14,7 +14,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.Sound;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -24,13 +23,10 @@ import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 
-import java.io.File;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static org.bukkit.Sound.BLOCK_CHEST_OPEN;
-import static org.bukkit.Sound.ENTITY_PLAYER_LEVELUP;
 
 public class InventoryMonitor implements Listener {
     private RewardService rewardService = RewardService.getInstance();
@@ -119,11 +115,11 @@ public class InventoryMonitor implements Listener {
                 if(b){
                     executeCommand(rewardEntity.getRewardID(),player);
 
-                    PlayerDataService playerDataService = PlayerDataService.getInstance();
+                    DataService playerDataService = CtOnlineReward.dataService;
                     boolean b1 = playerDataService.addRewardToPlayData(rewardEntity.getRewardID(), player);
                     if(b1){
                         giveMoney(player,rewardEntity.getRewardID());
-                        player.sendMessage("§a§l● 奖励领取成功!");
+                        player.sendMessage(CtOnlineReward.languageHandler.getLang("reward.receiveReward"));
                         Inventory build = InventoryFactory.build("menu.yml", player);
                         player.openInventory(build);
                     }
@@ -235,8 +231,8 @@ public class InventoryMonitor implements Listener {
 
 
         if(list.size() > size){
-            player.sendMessage("§c§l■ 此奖励需要"+list.size()+"格背包空间");
-            player.sendMessage("§c§l■ 背包空间不足,请先清空背包!");
+            player.sendMessage(CtOnlineReward.languageHandler.getLang("reward.volume").replace("{rewardSize}",String.valueOf(list.size())));
+            player.sendMessage(CtOnlineReward.languageHandler.getLang("reward.volume2"));
             return false;
         }
         for (ItemStack itemStack : list) {

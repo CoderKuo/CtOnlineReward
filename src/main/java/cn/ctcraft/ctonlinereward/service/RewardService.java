@@ -7,6 +7,7 @@ import com.google.common.base.Strings;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 import java.io.*;
@@ -69,7 +70,6 @@ public class RewardService {
             return list;
         }catch (FileNotFoundException e){
             String message = e.getMessage();
-            System.out.println(message);
             boolean b = message.contains("系统找不到指定的文件");
             if(b){
                 int i = message.indexOf("(系统找不到指定的文件。)");
@@ -125,4 +125,5 @@ public class RewardService {
         }
         return result;
     }
+
 }

@@ -1,0 +1,7 @@
+prefix: '[Cor在线奖励]'
+mysql:
+  createTable: '&a&l{prefix} 每日玩家数据表创建成功!'
+reward:
+  receiveReward: '&a&l● 奖励领取成功!'
+  volume: '&c&l■ 此奖励需要{rewardSize}格背包空间'
+  volume2: '&c&l■ 背包空间不足,请先清空背包!'
