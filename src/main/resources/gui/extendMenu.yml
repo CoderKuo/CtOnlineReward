@@ -4,7 +4,7 @@ values:
   backup:
     name: '&c&l返回主菜单'
     type:
-      name: 'TNT'
+      name: 'minecraft:tnt'
       #是否打开附魔  部分物品会出现问题，请提前测试
       enchantment: true
     lore:

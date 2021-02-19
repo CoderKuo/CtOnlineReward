@@ -68,7 +68,7 @@ public class MysqlBase implements DataService {
         JsonObject playerOnlineData = getPlayerOnlineData(pLayer);
         JsonElement time = playerOnlineData.get("time");
         if (time == null) {
-            insertPlayerOnlineTime(pLayer,0);
+            insertPlayerOnlineTime(pLayer, 0);
             return 0;
         }
         return time.getAsInt();
@@ -176,7 +176,12 @@ public class MysqlBase implements DataService {
                 ctOnlineReward.getLogger().warning("§c§l■ 数据库异常，数据插入失败！");
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            String message = e.getMessage();
+            if (message.contains("doesn't exist")) {
+                createTable();
+            } else {
+                e.printStackTrace();
+            }
         } finally {
             if (connection != null) {
                 try {
@@ -256,5 +261,180 @@ public class MysqlBase implements DataService {
         return false;
     }
 
+    @Override
+    public int getPlayerOnlineTimeWeek(Player player) {
+        String uuid = player.getUniqueId().toString();
+        Connection connection = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        int onlineTime = 0;
+        try {
+            connection = getConnection();
+            SqlUtil sqlUtil = SqlUtil.getInstance();
+            List<String> tableList = sqlUtil.getTableList();
+            List<String> weekString = Util.getWeekString();
+            String sql = "";
+            for (String s : weekString) {
+                if (tableList.contains(s)) {
+                    if (sql.equalsIgnoreCase("")) {
+                        sql = "select `online_data` from `" + s + "` where uuid='" + uuid + "'";
+                    } else {
+                        sql = sql.concat(" union all select `online_data` from `" + s + "` where uuid='" + uuid + "'");
+                    }
+                }
+            }
+            ps = connection.prepareStatement(sql);
+            rs = ps.executeQuery();
+            while (rs.next()) {
+                JsonParser jsonParser = new JsonParser();
+                JsonElement parse = jsonParser.parse(rs.getString(1));
+                if (!parse.isJsonNull()) {
+                    int onlineTimeByJsonObject = Util.getOnlineTimeByJsonObject(parse.getAsJsonObject());
+                    onlineTime += onlineTimeByJsonObject;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (connection != null) {
+                try {
+                    connection.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (ps != null) {
+                try {
+                    ps.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (rs != null) {
+                try {
+                    rs.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return onlineTime;
+    }
 
+    @Override
+    public int getPlayerOnlineTimeMonth(Player player) {
+        String uuid = player.getUniqueId().toString();
+        Connection connection = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        int onlineTime = 0;
+        try {
+            connection = getConnection();
+            SqlUtil sqlUtil = SqlUtil.getInstance();
+            List<String> tableList = sqlUtil.getTableList();
+            List<String> monthString = Util.getMonthString();
+            String sql = "";
+            for (String s : monthString) {
+                if (tableList.contains(s)) {
+                    if (sql.equalsIgnoreCase("")) {
+                        sql = "select `online_data` from `" + s + "` where uuid='" + uuid + "'";
+                    } else {
+                        sql = sql.concat(" union all select `online_data` from `" + s + "` where uuid='" + uuid + "'");
+                    }
+                }
+            }
+            ps = connection.prepareStatement(sql);
+            rs = ps.executeQuery();
+            while (rs.next()) {
+                JsonParser jsonParser = new JsonParser();
+                JsonElement parse = jsonParser.parse(rs.getString(1));
+                if (!parse.isJsonNull()) {
+                    int onlineTimeByJsonObject = Util.getOnlineTimeByJsonObject(parse.getAsJsonObject());
+                    onlineTime += onlineTimeByJsonObject;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (connection != null) {
+                try {
+                    connection.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (ps != null) {
+                try {
+                    ps.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (rs != null) {
+                try {
+                    rs.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return onlineTime;
+    }
+
+    @Override
+    public int getPlayerOnlineTimeAll(Player player) {
+        String uuid = player.getUniqueId().toString();
+        Connection connection = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        int onlineTime = 0;
+        try {
+            connection = getConnection();
+            SqlUtil sqlUtil = SqlUtil.getInstance();
+            List<String> tableList = sqlUtil.getTableList();
+            String sql = "";
+            for (String s : tableList) {
+                if (sql.equalsIgnoreCase("")) {
+                    sql = "select `online_data` from `" + s + "` where uuid='" + uuid + "'";
+                } else {
+                    sql = sql.concat(" union all select `online_data` from `" + s + "` where uuid='" + uuid + "'");
+                }
+            }
+            ps = connection.prepareStatement(sql);
+            rs = ps.executeQuery();
+            while (rs.next()) {
+                JsonParser jsonParser = new JsonParser();
+                JsonElement parse = jsonParser.parse(rs.getString(1));
+                if (!parse.isJsonNull()) {
+                    int onlineTimeByJsonObject = Util.getOnlineTimeByJsonObject(parse.getAsJsonObject());
+                    onlineTime += onlineTimeByJsonObject;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (connection != null) {
+                try {
+                    connection.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (ps != null) {
+                try {
+                    ps.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (rs != null) {
+                try {
+                    rs.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return onlineTime;
+    }
 }

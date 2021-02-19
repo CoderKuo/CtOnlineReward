@@ -1,6 +1,9 @@
 package cn.ctcraft.ctonlinereward.utils;
 
 import cn.ctcraft.ctonlinereward.CtOnlineReward;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.net.URL;
@@ -16,12 +19,17 @@ public class version {
         String version = "获取失败！";
         try {
             Path tempFile = Files.createTempFile("version", ".yml");
-            Files.copy(new URL("https://cdn.jsdelivr.net/gh/dkinging/CtOnlineReward@master/version.yml").openStream(), tempFile, StandardCopyOption.REPLACE_EXISTING);
+            Files.copy(new URL("https://note.youdao.com/yws/public/note/eead3b553997e3392d008f9787c45757").openStream(), tempFile, StandardCopyOption.REPLACE_EXISTING);
             tempFile.toFile().deleteOnExit();
             String str = new String(Files.readAllBytes(tempFile), "UTF-8");
+            JsonParser jsonParser = new JsonParser();
+            JsonElement parse = jsonParser.parse(str);
+            JsonObject asJsonObject = parse.getAsJsonObject();
+            JsonElement content = asJsonObject.get("content");
+            String yamlText = content.getAsString().replace("<div yne-bulb-block=\"paragraph\" style=\"white-space: pre-wrap;\">","").replace("</div>","").replace("&nbsp;"," ").replace("<br>","\n");
             YamlConfiguration yamlConfiguration = new YamlConfiguration();
-            yamlConfiguration.loadFromString(str);
-            version = yamlConfiguration.getString("version");
+            yamlConfiguration.loadFromString(yamlText);
+            version = yamlConfiguration.getString("CtOnlineReward.version");
         }catch (Exception e){
             e.printStackTrace();
         }

@@ -11,4 +11,8 @@ public interface DataService {
     void insertPlayerOnlineTime(Player player,int time);
     List<String> getPlayerRewardArray(Player player);
     boolean addRewardToPlayData(String rewardId,Player player);
+
+    int getPlayerOnlineTimeWeek(Player player);
+    int getPlayerOnlineTimeMonth(Player player);
+    int getPlayerOnlineTimeAll(Player player);
 }

@@ -31,7 +31,12 @@ public class Placeholder extends PlaceholderExpansion {
                 return player.getWorld().getName();
             case "onlineTime":
                 return String.valueOf(playerDataService.getPlayerOnlineTime(player));
-
+            case "weekOnlineTime":
+                return String.valueOf(playerDataService.getPlayerOnlineTimeWeek(player));
+            case "monthOnlineTime":
+                return String.valueOf(playerDataService.getPlayerOnlineTimeMonth(player));
+            case "allOnlineTime":
+                return String.valueOf(playerDataService.getPlayerOnlineTimeAll(player));
         }
         return null;
     }

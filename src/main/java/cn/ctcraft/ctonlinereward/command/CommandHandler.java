@@ -25,6 +25,9 @@ public class CommandHandler implements CommandExecutor {
         }
         if(args.length == 0){
             if(sender instanceof Player){
+                if (!sender.hasPermission("CtOnlineReward.cor")){
+                    sender.sendMessage("§c§l权限不足!");
+                }
                 commandExecute.openInventory(sender,new String[]{"1"});
 
             }else {

@@ -4,6 +4,7 @@ import cn.ctcraft.ctonlinereward.CtOnlineReward;
 import cn.ctcraft.ctonlinereward.RewardEntity;
 import cn.ctcraft.ctonlinereward.database.DataService;
 import cn.ctcraft.ctonlinereward.database.YamlData;
+import cn.ctcraft.ctonlinereward.inventory.ActionType;
 import cn.ctcraft.ctonlinereward.inventory.InventoryFactory;
 import cn.ctcraft.ctonlinereward.inventory.MainInventoryHolder;
 import cn.ctcraft.ctonlinereward.service.RewardService;
@@ -119,9 +120,7 @@ public class InventoryMonitor implements Listener {
                     boolean b1 = playerDataService.addRewardToPlayData(rewardEntity.getRewardID(), player);
                     if(b1){
                         giveMoney(player,rewardEntity.getRewardID());
-                        player.sendMessage(CtOnlineReward.languageHandler.getLang("reward.receiveReward"));
-                        Inventory build = InventoryFactory.build("menu.yml", player);
-                        player.openInventory(build);
+                        action(rewardEntity.getRewardID(),player);
                     }
                 }
 
@@ -132,6 +131,55 @@ public class InventoryMonitor implements Listener {
             }
         }
     }
+
+    private void action(String rewardID,Player player){
+        YamlConfiguration rewardYaml = YamlData.rewardYaml;
+        Set<String> rewardYamlKeys = rewardYaml.getKeys(false);
+        if (!rewardYamlKeys.contains(rewardID)){
+            return;
+        }
+        ConfigurationSection configurationSection = rewardYaml.getConfigurationSection(rewardID);
+        Set<String> keys = configurationSection.getKeys(false);
+        if (!keys.contains("receiveAction")){
+            return;
+        }
+        List<String> receiveAction = configurationSection.getStringList("receiveAction");
+        for (String action : receiveAction) {
+            actionHandler(action,player,configurationSection);
+        }
+    }
+
+    private void actionHandler(String actionContent,Player player,ConfigurationSection configurationSection){
+        ActionType actionType = ActionType.getActionType(actionContent);
+        if (actionType == null){
+            return;
+        }
+        switch (actionType){
+            case sound:
+                String soundText = actionContent.replace("[sound]", "").replace(" ", "");
+                Sound sound = Sound.valueOf(soundText);
+                player.playSound(player.getLocation(),sound,1,1);
+                break;
+            case Message:
+                String messageText = actionContent.replace("[Message]", "").replace(" ", "").replace("&", "§");
+                int moneyNum = configurationSection.getInt("economy.money");
+                messageText = messageText.replace("{money}",String.valueOf(moneyNum));
+                int pointsNum = configurationSection.getInt("economy.points");
+                messageText = messageText.replace("{points}",String.valueOf(pointsNum));
+                player.sendMessage(messageText);
+                break;
+            case closeGUI:
+                player.closeInventory();
+                break;
+            case openGUI:
+                String guiText = actionContent.replace("[openGUI]", "").replace(" ", "");
+                Inventory build = InventoryFactory.build(guiText, player);
+                player.openInventory(build);
+                break;
+        }
+    }
+
+
 
     private Sound getSound(String rewardID){
         YamlConfiguration rewardYaml = YamlData.rewardYaml;

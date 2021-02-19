@@ -22,7 +22,19 @@ Setting:
   #菜单中物品默认材质
   defaultItemType:
     type:
-      name: 'GLASS_BOTTLE'
+      name: 'minecraft:glass_bottle'
       #是否打开附魔  部分物品会出现问题，请提前测试
       enchantment: false
+  #挂机相关配置
+  afkConfig:
+    #是否开启挂机检测 进入挂机状态之后将不记录在线时间
+    use: false
+    #挂机标准为多长时间无响应 单位:分钟
+    time: 5
+    #检测强度 default默认等级 strong加强等级  在strong模式下玩家只有视角动也被算作挂机 default模式下玩家xyz及视角改变任意一项就不算作挂机
+    mode: default
+    #挂机提醒
+    message:
+      joinAfk: '&c&l[在线奖励] 你已进入挂机模式,将不再记录在线时间!'
+      levelAfk: '&a&l[在线奖励] 你已离开挂机模式,开始记录在线时间!'
 

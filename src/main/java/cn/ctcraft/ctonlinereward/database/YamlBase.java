@@ -2,9 +2,13 @@ package cn.ctcraft.ctonlinereward.database;
 
 import cn.ctcraft.ctonlinereward.CtOnlineReward;
 import cn.ctcraft.ctonlinereward.service.YamlService;
+import cn.ctcraft.ctonlinereward.utils.Util;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 
+import java.io.File;
+import java.io.FilenameFilter;
+import java.util.ArrayList;
 import java.util.List;
 
 public class YamlBase implements DataService {
@@ -73,4 +77,79 @@ public class YamlBase implements DataService {
         return true;
     }
 
+    @Override
+    public int getPlayerOnlineTimeWeek(Player player) {
+        int onlineTime = 0;
+        List<String> weekString = Util.getWeekString();
+        for (String s : weekString) {
+            File file = new File(ctOnlineReward.getDataFolder() + "/playerData/" + s+".yml");
+            if (file.exists()){
+                YamlConfiguration yamlConfiguration = new YamlConfiguration();
+                try {
+                    yamlConfiguration.load(file);
+                    int time = yamlConfiguration.getInt(player.getUniqueId().toString() + ".time");
+                    onlineTime += time;
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
+            }
+        }
+        return onlineTime;
+    }
+
+    @Override
+    public int getPlayerOnlineTimeMonth(Player player) {
+        int onlineTime = 0;
+        List<String> monthString = Util.getMonthString();
+        for (String s : monthString) {
+            File file = new File(ctOnlineReward.getDataFolder() + "/playerData/" + s+".yml");
+            if (file.exists()){
+                YamlConfiguration yamlConfiguration = new YamlConfiguration();
+                try {
+                    yamlConfiguration.load(file);
+                    int time = yamlConfiguration.getInt(player.getUniqueId().toString() + ".time");
+                    onlineTime += time;
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
+            }
+        }
+        return onlineTime;
+    }
+
+    @Override
+    public int getPlayerOnlineTimeAll(Player player) {
+        int onlineTime = 0;
+        File file = new File(ctOnlineReward.getDataFolder() + "/playerData");
+        FilterBySuffix filter = new FilterBySuffix(".yml");
+        File[] files = file.listFiles(filter);
+        if (files == null){
+            return 0;
+        }
+        for (File file1 : files) {
+            YamlConfiguration yamlConfiguration = new YamlConfiguration();
+            try {
+                yamlConfiguration.load(file1);
+                int time = yamlConfiguration.getInt(player.getUniqueId().toString() + ".time");
+                onlineTime += time;
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+        }
+        return onlineTime;
+    }
+
+}
+
+class FilterBySuffix implements FilenameFilter {
+    private String suffix;
+
+    public FilterBySuffix(String suffix) {
+        this.suffix = suffix;
+    }
+
+    @Override
+    public boolean accept(File dir, String name) {
+        return name.endsWith(suffix);
+    }
 }

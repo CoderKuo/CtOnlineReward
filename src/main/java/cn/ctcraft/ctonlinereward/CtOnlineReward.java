@@ -6,6 +6,8 @@ import cn.ctcraft.ctonlinereward.inventory.RewardSetInventoryMonitor;
 import cn.ctcraft.ctonlinereward.listner.InventoryMonitor;
 import cn.ctcraft.ctonlinereward.service.OnlineTimer;
 import cn.ctcraft.ctonlinereward.service.YamlService;
+import cn.ctcraft.ctonlinereward.service.afk.AfkService;
+import cn.ctcraft.ctonlinereward.service.afk.AfkTimer;
 import cn.ctcraft.ctonlinereward.utils.version;
 import com.zaxxer.hikari.HikariDataSource;
 import net.milkbowl.vault.economy.Economy;
@@ -95,6 +97,13 @@ public final class CtOnlineReward extends JavaPlugin {
 
         OnlineTimer.getInstance().runTaskTimerAsynchronously(this,1200,1200);
 
+        int time = getConfig().getInt("Setting.afkConfig.time");
+
+        String string = getConfig().getString("Setting.afkConfig.mode");
+        if (string.equalsIgnoreCase("strong")){
+            AfkService.getInstance().openStrongMode();
+        }
+        new AfkTimer().runTaskTimerAsynchronously(this,0,time*60*20);
 
         logger.info("§a§l● 在线奖励加载成功!");
 

@@ -4,7 +4,7 @@ values:
   10min:
     name: '&a在线十分钟奖励'
     type:
-      name: 'GLASS_BOTTLE'
+      name: 'minecraft:glass_bottle'
       #是否打开附魔  部分物品会出现问题，请提前测试
       enchantment: true
     lore:
@@ -16,7 +16,7 @@ values:
       before:
         name: '&7在线十分钟奖励[未激活]'
         type:
-          name: 'GLASS_BOTTLE'
+          name: 'minecraft:glass_bottle'
           #是否打开附魔  部分物品会出现问题，请提前测试
           enchantment: false
         lore:
@@ -24,7 +24,7 @@ values:
       activation:
         name: '&a在线十分钟奖励[待领取]'
         type:
-          name: 'EXP_BOTTLE'
+          name: 'minecraft:experience_bottle'
           #是否打开附魔  部分物品会出现问题，请提前测试
           enchantment: true
         lore:
@@ -32,7 +32,7 @@ values:
       after:
         name: '&c在线十分钟奖励[已领取]'
         type:
-          name: 'GLASS_BOTTLE'
+          name: 'minecraft:glass_bottle'
           #是否打开附魔  部分物品会出现问题，请提前测试
           enchantment: false
         lore:
@@ -40,7 +40,7 @@ values:
   spawn:
     name: '&c&l点击回城'
     type:
-      name: 'STONE'
+      name: 'minecraft:stone'
       #是否打开附魔  部分物品会出现问题，请提前测试
       enchantment: true
     lore:
@@ -57,7 +57,7 @@ values:
   menu:
     name: '&c&l打开菜单'
     type:
-      name: 'WOOD_PICKAXE'
+      name: 'minecraft:wood_pickaxe'
       #是否打开附魔  部分物品会出现问题，请提前测试
       enchantment: true
     lore:

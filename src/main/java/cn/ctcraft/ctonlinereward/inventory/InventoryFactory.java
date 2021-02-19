@@ -6,6 +6,8 @@ import cn.ctcraft.ctonlinereward.database.DataService;
 import cn.ctcraft.ctonlinereward.database.YamlData;
 import cn.ctcraft.ctonlinereward.service.RewardStatus;
 import cn.ctcraft.ctonlinereward.service.YamlService;
+import cn.ctcraft.ctonlinereward.service.rewardHandler.RewardOnlineTimeHandler;
+import cn.ctcraft.ctonlinereward.utils.Util;
 import me.clip.placeholderapi.PlaceholderAPI;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -17,6 +19,8 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -162,12 +166,15 @@ public class InventoryFactory {
         if(typeKeys.contains("name")){
             String name = type.getString("name");
             if(itemStack == null){
-                itemStack = new ItemStack(Material.getMaterial(name.toUpperCase()));
+                itemStack = new ItemStack(getItemStackByNMS(name));
             }else {
-                itemStack.setType(Material.getMaterial(name.toUpperCase()));
+                itemStack.setType(getItemStackByNMS(name).getType());
             }
         }
         if(itemStack == null){
+            itemStack = new ItemStack(Material.CHEST);
+        }
+        if (itemStack.getType() == Material.AIR){
             itemStack = new ItemStack(Material.CHEST);
         }
         if(typeKeys.contains("enchantment")){
@@ -181,10 +188,29 @@ public class InventoryFactory {
         return itemStack;
     }
 
+    private ItemStack getItemStackByNMS(String name){
+        String versionString = Util.getVersionString();
+        try {
+            Class<?> itemClass = Class.forName("net.minecraft.server." + versionString + ".Item");
+            Method b = itemClass.getMethod("b", String.class);
+            Object invoke = b.invoke(itemClass, name);
+            Class<?> itemStackClass = Class.forName("net.minecraft.server." + versionString + ".ItemStack");
+            Constructor<?> itemStackConstructor = itemStackClass.getDeclaredConstructor(itemClass);
+            Object nmsItemStack = itemStackConstructor.newInstance(invoke);
+            Class<?> craftItemStack = Class.forName("org.bukkit.craftbukkit." + versionString + ".inventory.CraftItemStack");
+            Method asBukkitCopy = craftItemStack.getMethod("asBukkitCopy", itemStackClass);
+            return (ItemStack) asBukkitCopy.invoke(craftItemStack, nmsItemStack);
+        }catch (Exception e){
+            throw new RuntimeException("GUI物品材质名称配置错误!",e);
+        }
+    }
+
     private void itemMetaHandler(ConfigurationSection config,ItemMeta itemMeta){
         Set<String> configKeys = config.getKeys(false);
         if(configKeys.contains("name")){
-            itemMeta.setDisplayName(config.getString("name").replace("&","§"));
+            String name = config.getString("name").replace("&", "§");
+            String s = PlaceholderAPI.setPlaceholders(player, name);
+            itemMeta.setDisplayName(s);
         }
         if(configKeys.contains("lore")){
             List<String> lore = config.getStringList("lore");
@@ -200,13 +226,11 @@ public class InventoryFactory {
         if(!keys.contains("time")){
             return RewardStatus.before;
         }
-        int time = configurationSection.getInt("time");
-        DataService playerDataService = CtOnlineReward.dataService;
-        int playerOnlineTime = playerDataService.getPlayerOnlineTime(player);
-        if(playerOnlineTime < time) {
+        boolean timeIsOk = RewardOnlineTimeHandler.getInstance().onlineTimeIsOk(player, configurationSection.getString("time"));
+        if(!timeIsOk) {
             return RewardStatus.before;
         }
-        List<String> playerRewardArray = playerDataService.getPlayerRewardArray(player);
+        List<String> playerRewardArray = CtOnlineReward.dataService.getPlayerRewardArray(player);
         if(playerRewardArray.size() == 0){
             return RewardStatus.activation;
         }
