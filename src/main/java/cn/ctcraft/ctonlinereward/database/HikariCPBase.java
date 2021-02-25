@@ -49,6 +49,7 @@ public class HikariCPBase {
         hikariConfig.setAutoCommit(true);
 
         sqlConnectionPool = new HikariDataSource(hikariConfig);
+
     }
 
     public HikariDataSource getSqlConnectionPool(){

@@ -9,7 +9,5 @@ import java.util.Map;
 public class YamlData {
     public static Map<String, YamlConfiguration> guiYaml = new HashMap<>();
     public static YamlConfiguration rewardYaml = new YamlConfiguration();
-    public static YamlConfiguration playerData = new YamlConfiguration();
 
-    public static Map<Player,Long> playerJoinTime = new HashMap<>();
 }

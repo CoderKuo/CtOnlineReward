@@ -6,7 +6,7 @@
 
     <groupId>cn.ctcraft</groupId>
     <artifactId>CtOnlineReward</artifactId>
-    <version>0.0.4</version>
+    <version>0.0.8</version>
     <packaging>jar</packaging>
 
     <name>CtOnlineReward</name>

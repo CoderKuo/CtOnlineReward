@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 public class InventoryFactory {
     private Player player;
@@ -39,10 +40,6 @@ public class InventoryFactory {
 
     private Inventory getInventory(String inventoryId, Player player) {
         this.player = player;
-        boolean b = yamlService.loadPlayerDataYaml();
-        if(!b){
-            ctOnlineReward.getLogger().warning("§c§l■ 玩家数据文件获取失败!");
-        }
         Map<String, YamlConfiguration> guiYaml = YamlData.guiYaml;
         if(!guiYaml.containsKey(inventoryId)){
             player.sendMessage("§c§l菜单不存在!");
@@ -189,6 +186,17 @@ public class InventoryFactory {
     }
 
     private ItemStack getItemStackByNMS(String name){
+        if (isInteger(name)){
+            return new ItemStack(Material.getMaterial(Integer.parseInt(name)));
+        }
+
+        String[] split = name.split(":");
+        if (split[0].equalsIgnoreCase("minecraft")){
+            Material material = Material.getMaterial(split[1].toUpperCase());
+            if (material != null){
+                return new ItemStack(material);
+            }
+        }
         String versionString = Util.getVersionString();
         try {
             Class<?> itemClass = Class.forName("net.minecraft.server." + versionString + ".Item");
@@ -203,6 +211,11 @@ public class InventoryFactory {
         }catch (Exception e){
             throw new RuntimeException("GUI物品材质名称配置错误!",e);
         }
+    }
+
+    private static boolean isInteger(String str) {
+        Pattern pattern = Pattern.compile("^[-\\+]?[\\d]*$");
+        return pattern.matcher(str).matches();
     }
 
     private void itemMetaHandler(ConfigurationSection config,ItemMeta itemMeta){
