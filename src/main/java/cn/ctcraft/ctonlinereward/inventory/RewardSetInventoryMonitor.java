@@ -1,6 +1,8 @@
 package cn.ctcraft.ctonlinereward.inventory;
 
+import cn.ctcraft.ctonlinereward.pojo.RewardData;
 import cn.ctcraft.ctonlinereward.service.RewardService;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -26,12 +28,12 @@ public class RewardSetInventoryMonitor implements Listener {
 
     @EventHandler
     public void Monitor(InventoryClickEvent e){
-        Inventory clickedInventory = e.getClickedInventory();
-        if(clickedInventory == null){
+        Inventory inventory = e.getInventory();
+        if(inventory == null){
             return;
         }
 
-        InventoryHolder holder = clickedInventory.getHolder();
+        InventoryHolder holder = inventory.getHolder();
         if(!(holder instanceof RewardSetInventoryHolder)){
             return;
         }
@@ -42,10 +44,15 @@ public class RewardSetInventoryMonitor implements Listener {
         if(rawSlot == 40){
             List<ItemStack> itemStacks = new ArrayList<>();
             for (int i = 0; i < 36; i++) {
-                itemStacks.add(clickedInventory.getItem(i));
+                ItemStack item = inventory.getItem(i);
+                if (item != null && item.getType() != Material.AIR){
+                    itemStacks.add(inventory.getItem(i));
+                }
             }
             String reward = ((RewardSetInventoryHolder) holder).getReward();
-            boolean b = rewardService.saveRewardDate(itemStacks, reward);
+            RewardData rewardData = new RewardData(itemStacks);
+
+            boolean b = rewardService.saveRewardDate(rewardData, reward);
             if(b){
                 ((Player)e.getWhoClicked()).sendMessage("§a§l● "+reward+"奖励数据保存成功!");
             }

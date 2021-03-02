@@ -15,6 +15,7 @@ public class MainInventoryHolder implements InventoryHolder {
     public Map<Integer, RewardEntity> statusMap = new HashMap<>();
     public Map<Integer, ConfigurationSection> commandMap = new HashMap<>();
     public Map<Integer,String> guiMap = new HashMap<>();
+    public String inventoryID;
 
     @Override
     public Inventory getInventory() {

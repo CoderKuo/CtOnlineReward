@@ -2,21 +2,17 @@ package cn.ctcraft.ctonlinereward.service;
 
 import cn.ctcraft.ctonlinereward.CtOnlineReward;
 import cn.ctcraft.ctonlinereward.database.YamlData;
+import cn.ctcraft.ctonlinereward.pojo.RewardData;
 import cn.ctcraft.ctonlinereward.utils.SerializableUtil;
-import com.google.common.base.Strings;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 import java.io.*;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class RewardService {
     private static RewardService instance = new RewardService();
@@ -31,7 +27,7 @@ public class RewardService {
         return instance;
     }
 
-    public List<ItemStack> getItemStackFromRewardId(String rewardId) throws Exception {
+    public List<ItemStack> getItemStackFromRewardId(String rewardId) {
         YamlConfiguration rewardYaml = YamlData.rewardYaml;
         Set<String> rewardYamlKeys = rewardYaml.getKeys(false);
         if(!rewardYamlKeys.contains(rewardId)){
@@ -50,24 +46,12 @@ public class RewardService {
     public List<ItemStack> getItemStackFromFile(File file){
         Logger logger = ctOnlineReward.getLogger();
         try {
-            FileReader fileReader = new FileReader(file);
-            BufferedReader br = new BufferedReader(fileReader);
-            StringBuilder sb = new StringBuilder();
-            while (br.ready()) {
-                sb.append(br.readLine());
-            }
+            FileInputStream fileInputStream = new FileInputStream(file);
+            byte[] bFile = new byte[(int) file.length()];
+            fileInputStream.read(bFile);
             SerializableUtil serializableUtil = new SerializableUtil();
-            String s = sb.toString();
-            String[] split = s.split("\\(fenge\\)");
-            List<ItemStack> list = new ArrayList<>();
-            for (String s1 : split) {
-                ItemStack itemStack = null;
-                if (!Strings.isNullOrEmpty(s1) && !s1.equalsIgnoreCase("null")) {
-                    itemStack = serializableUtil.singleObjectFromString(s1, ItemStack.class);
-                }
-                list.add(itemStack);
-            }
-            return list;
+            RewardData rewardData = serializableUtil.singleObjectFromByteArray(bFile, RewardData.class);
+            return rewardData.getRewardList();
         }catch (FileNotFoundException e){
             String message = e.getMessage();
             boolean b = message.contains("系统找不到指定的文件");
@@ -86,10 +70,10 @@ public class RewardService {
     }
 
 
-    public boolean saveRewardDate(List<ItemStack> stacks, String reward) {
+    public boolean saveRewardDate(RewardData rewardData, String reward) {
         Logger logger = ctOnlineReward.getLogger();
         try {
-            String rewardDate = getRewardDate(stacks);
+            byte[] rewardDate = getRewardDate(rewardData);
             File file = new File(ctOnlineReward.getDataFolder() + "/rewardData/" + reward);
             if (!file.exists()) {
                 boolean newFile = file.createNewFile();
@@ -100,10 +84,9 @@ public class RewardService {
                 }
             }
 
-            FileWriter fileWriter = new FileWriter(file.getAbsoluteFile());
-            BufferedWriter bw = new BufferedWriter(fileWriter);
-            bw.write(rewardDate);
-            bw.close();
+            FileOutputStream fileOutputStream = new FileOutputStream(file);
+            fileOutputStream.write(rewardDate);
+            fileOutputStream.close();
             return true;
         } catch (Exception e) {
             e.printStackTrace();
@@ -112,18 +95,10 @@ public class RewardService {
         return false;
     }
 
-    public String getRewardDate(List<ItemStack> stacks) throws IOException {
+    public byte[] getRewardDate(RewardData rewardData) throws IOException {
         SerializableUtil serializableUtil = new SerializableUtil();
-        String result = "";
-        for (ItemStack stack : stacks) {
-            String s = serializableUtil.singleObjectToString(stack);
-            if (Strings.isNullOrEmpty(result)) {
-                result = s;
-            } else {
-                result = result + "(fenge)" + s;
-            }
-        }
-        return result;
+        return serializableUtil.singleObjectToByteArray(rewardData);
+
     }
 
 }

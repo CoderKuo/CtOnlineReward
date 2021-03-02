@@ -50,6 +50,7 @@ public class InventoryFactory {
         int size = yamlConfiguration.getInt("slot");
         Inventory inventory = Bukkit.createInventory(mainInventoryHolder, size, name.replace("&", "§"));
         addItemStack(inventory, yamlConfiguration);
+        mainInventoryHolder.inventoryID = inventoryId;
         return inventory;
     }
 

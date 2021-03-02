@@ -18,12 +18,14 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 
+import javax.xml.ws.Holder;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -32,22 +34,28 @@ import java.util.Set;
 public class InventoryMonitor implements Listener {
     private RewardService rewardService = RewardService.getInstance();
     private CtOnlineReward ctOnlineReward = CtOnlineReward.getPlugin(CtOnlineReward.class);
-
+    private InventoryHolder holder = null;
     @EventHandler
     public void InventoryClick(InventoryClickEvent e) {
         Inventory Inventory = e.getInventory();
         if (Inventory == null) {
             return;
         }
-        InventoryHolder holder = Inventory.getHolder();
+        holder = Inventory.getHolder();
         if (!(holder instanceof MainInventoryHolder)) {
             return;
         }
-        e.setCancelled(true);
         int rawSlot = e.getRawSlot();
-        if (e.getRawSlot() < 0 || e.getRawSlot() > e.getInventory().getSize() || e.getInventory() == null) {
+        if (e.getRawSlot() < 0 || e.getInventory() == null) {
             return;
         }
+        if (e.getClick().isShiftClick()){
+            e.setCancelled(true);
+        }
+        if (e.getClickedInventory().getHolder() instanceof MainInventoryHolder){
+            e.setCancelled(true);
+        }
+
         MainInventoryHolder mainInventoryHolder = (MainInventoryHolder) holder;
         Map<Integer, RewardEntity> statusMap = mainInventoryHolder.statusMap;
         Player player = (Player) e.getWhoClicked();
@@ -57,7 +65,6 @@ public class InventoryMonitor implements Listener {
         Map<Integer, ConfigurationSection> commandMap = mainInventoryHolder.commandMap;
         if (commandMap.containsKey(rawSlot)) {
             commandExecute(commandMap.get(rawSlot), player);
-            player.closeInventory();
         }
         Map<Integer, String> guiMap = mainInventoryHolder.guiMap;
         if (guiMap.containsKey(rawSlot)) {
@@ -105,6 +112,16 @@ public class InventoryMonitor implements Listener {
 
     private void rewardExecute(RewardEntity rewardEntity, Player player) {
         if (rewardEntity.getStatus() == RewardStatus.activation) {
+            List<String> playerRewardArray = CtOnlineReward.dataService.getPlayerRewardArray(player);
+            if (playerRewardArray.contains(rewardEntity.getRewardID())){
+                if (holder!=null){
+                    if (holder instanceof MainInventoryHolder){
+                        Inventory build = InventoryFactory.build(((MainInventoryHolder) holder).inventoryID, player);
+                        player.openInventory(build);
+                    }
+                }
+                return;
+            }
             try {
                 Sound sound = getSound(rewardEntity.getRewardID());
                 if (sound != null) {
@@ -264,7 +281,8 @@ public class InventoryMonitor implements Listener {
         PlayerInventory inventory = player.getInventory();
         int size = 0;
         for (int i = 0; i < 36; i++) {
-            if (inventory.getItem(i) == null) {
+            ItemStack item = inventory.getItem(i);
+            if (item == null) {
                 size++;
             }
         }
