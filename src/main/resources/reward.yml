@@ -4,6 +4,7 @@
   #计算符号 ==等于 <=小于等于 >=大于等于 !=不等于 >大于 <小于 +加 -减 *乘 /除 &&与 ||或
   time: "{onlineTime}>=10"
   rewardData: '10min'
+  permission: 'CtOnlineReward.reward.10min'
   command:
     PlayerCommands:
       - 'say 我领取了十分钟在线奖励'

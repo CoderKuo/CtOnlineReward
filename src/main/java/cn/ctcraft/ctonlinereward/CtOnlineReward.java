@@ -8,6 +8,7 @@ import cn.ctcraft.ctonlinereward.service.OnlineTimer;
 import cn.ctcraft.ctonlinereward.service.YamlService;
 import cn.ctcraft.ctonlinereward.service.afk.AfkService;
 import cn.ctcraft.ctonlinereward.service.afk.AfkTimer;
+import cn.ctcraft.ctonlinereward.utils.updater.LangUpdater;
 import cn.ctcraft.ctonlinereward.utils.version;
 import com.zaxxer.hikari.HikariDataSource;
 import net.milkbowl.vault.economy.Economy;
@@ -92,6 +93,8 @@ public final class CtOnlineReward extends JavaPlugin {
             throw new RuntimeException("§c§l■ lang.yml文件加载失败!",e);
         }
         lang = yamlConfiguration;
+
+        LangUpdater.exec();
 
         languageHandler = new LanguageHandler();
 

@@ -35,6 +35,7 @@ public class InventoryMonitor implements Listener {
     private RewardService rewardService = RewardService.getInstance();
     private CtOnlineReward ctOnlineReward = CtOnlineReward.getPlugin(CtOnlineReward.class);
     private InventoryHolder holder = null;
+
     @EventHandler
     public void InventoryClick(InventoryClickEvent e) {
         Inventory Inventory = e.getInventory();
@@ -49,10 +50,10 @@ public class InventoryMonitor implements Listener {
         if (e.getRawSlot() < 0 || e.getInventory() == null) {
             return;
         }
-        if (e.getClick().isShiftClick()){
+        if (e.getClick().isShiftClick()) {
             e.setCancelled(true);
         }
-        if (e.getClickedInventory().getHolder() instanceof MainInventoryHolder){
+        if (e.getClickedInventory().getHolder() instanceof MainInventoryHolder) {
             e.setCancelled(true);
         }
 
@@ -113,9 +114,9 @@ public class InventoryMonitor implements Listener {
     private void rewardExecute(RewardEntity rewardEntity, Player player) {
         if (rewardEntity.getStatus() == RewardStatus.activation) {
             List<String> playerRewardArray = CtOnlineReward.dataService.getPlayerRewardArray(player);
-            if (playerRewardArray.contains(rewardEntity.getRewardID())){
-                if (holder!=null){
-                    if (holder instanceof MainInventoryHolder){
+            if (playerRewardArray.contains(rewardEntity.getRewardID())) {
+                if (holder != null) {
+                    if (holder instanceof MainInventoryHolder) {
                         Inventory build = InventoryFactory.build(((MainInventoryHolder) holder).inventoryID, player);
                         player.openInventory(build);
                     }
@@ -123,22 +124,28 @@ public class InventoryMonitor implements Listener {
                 return;
             }
             try {
-                Sound sound = getSound(rewardEntity.getRewardID());
-                if (sound != null) {
-                    player.playSound(player.getLocation(), sound, 1F, 1F);
-                }
-
-                List<ItemStack> itemStackFromRewardId = rewardService.getItemStackFromRewardId(rewardEntity.getRewardID());
-                boolean b = givePlayerItem(itemStackFromRewardId, player);
-                if (b) {
-                    executeCommand(rewardEntity.getRewardID(), player);
-
+                boolean b = permissionHandler(rewardEntity.getRewardID(), player);
+                if (b){
                     DataService playerDataService = CtOnlineReward.dataService;
                     boolean b1 = playerDataService.addRewardToPlayData(rewardEntity.getRewardID(), player);
                     if (b1) {
+                        Sound sound = getSound(rewardEntity.getRewardID());
+                        if (sound != null) {
+                            player.playSound(player.getLocation(), sound, 1F, 1F);
+                        }
+
+                        List<ItemStack> itemStackFromRewardId = rewardService.getItemStackFromRewardId(rewardEntity.getRewardID());
+                        if (itemStackFromRewardId != null) {
+                            givePlayerItem(itemStackFromRewardId, player);
+                        }
+                        executeCommand(rewardEntity.getRewardID(), player);
                         giveMoney(player, rewardEntity.getRewardID());
                         action(rewardEntity.getRewardID(), player);
                     }
+                }else{
+                    String lang = CtOnlineReward.languageHandler.getLang("reward.volume3");
+                    player.sendMessage(lang);
+
                 }
 
 
@@ -147,6 +154,22 @@ public class InventoryMonitor implements Listener {
                 ex.printStackTrace();
             }
         }
+    }
+
+    private boolean permissionHandler(String rewardId,Player player){
+        YamlConfiguration rewardYaml = YamlData.rewardYaml;
+        Set<String> rewardYamlKeys = rewardYaml.getKeys(false);
+        if (!rewardYamlKeys.contains(rewardId)) {
+            return true;
+        }
+        ConfigurationSection configurationSection = rewardYaml.getConfigurationSection(rewardId);
+        Set<String> keys = configurationSection.getKeys(false);
+        if (!keys.contains("permission")) {
+            return true;
+        }
+        String permission = configurationSection.getString("permission");
+        return player.hasPermission(permission);
+
     }
 
     private void action(String rewardID, Player player) {
