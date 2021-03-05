@@ -11,7 +11,7 @@ public class LangUpdater {
         boolean volume3 = reward.contains("volume3");
         if (!volume3){
             CtOnlineReward plugin = CtOnlineReward.getPlugin(CtOnlineReward.class);
-            plugin.saveResource("lang.yml",false);
+            plugin.saveResource("lang.yml",true);
         }
     }
 }

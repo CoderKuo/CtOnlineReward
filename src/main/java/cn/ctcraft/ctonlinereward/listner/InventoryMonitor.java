@@ -10,6 +10,7 @@ import cn.ctcraft.ctonlinereward.inventory.MainInventoryHolder;
 import cn.ctcraft.ctonlinereward.service.RewardService;
 import cn.ctcraft.ctonlinereward.service.RewardStatus;
 import me.clip.placeholderapi.PlaceholderAPI;
+import net.milkbowl.vault.economy.EconomyResponse;
 import org.black_ixx.playerpoints.PlayerPointsAPI;
 import org.bukkit.Bukkit;
 import org.bukkit.Sound;
@@ -242,7 +243,7 @@ public class InventoryMonitor implements Listener {
     private void giveMoney(Player player, String rewardID) {
         YamlConfiguration rewardYaml = YamlData.rewardYaml;
         Set<String> rewardYamlKeys = rewardYaml.getKeys(false);
-        if (rewardYamlKeys.contains(rewardID)) {
+        if (!rewardYamlKeys.contains(rewardID)) {
             return;
         }
         ConfigurationSection rewardIdYaml = rewardYaml.getConfigurationSection(rewardID);
