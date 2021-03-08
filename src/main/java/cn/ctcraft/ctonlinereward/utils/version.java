@@ -7,6 +7,7 @@ import com.google.gson.JsonParser;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.net.URL;
+import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
@@ -30,7 +31,11 @@ public class version {
             YamlConfiguration yamlConfiguration = new YamlConfiguration();
             yamlConfiguration.loadFromString(yamlText);
             version = yamlConfiguration.getString("CtOnlineReward.version");
-        }catch (Exception e){
+        }catch (UnknownHostException e){
+            version = "版本信息获取失败！" ;
+            versionMsg.add(version);
+            return versionMsg;
+        } catch (Exception e){
             e.printStackTrace();
         }
         CtOnlineReward plugin = CtOnlineReward.getPlugin(CtOnlineReward.class);
