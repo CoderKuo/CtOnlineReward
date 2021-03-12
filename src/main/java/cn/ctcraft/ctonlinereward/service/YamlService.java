@@ -3,6 +3,11 @@ package cn.ctcraft.ctonlinereward.service;
 import cn.ctcraft.ctonlinereward.CtOnlineReward;
 import cn.ctcraft.ctonlinereward.database.YamlData;
 import cn.ctcraft.ctonlinereward.utils.Util;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.google.gson.JsonPrimitive;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
 
@@ -11,6 +16,7 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Map;
+import java.util.Set;
 
 public class YamlService {
     private static YamlService instance = new YamlService();
@@ -31,7 +37,7 @@ public class YamlService {
             boolean mkdir = file.mkdir();
             if (mkdir) {
                 ctOnlineReward.saveResource("gui/menu.yml", false);
-                ctOnlineReward.saveResource("gui/extendMenu.yml",false);
+                ctOnlineReward.saveResource("gui/extendMenu.yml", false);
                 ctOnlineReward.getLogger().info("§a§l● GUI文件夹构建成功!");
             }
         }
@@ -65,6 +71,7 @@ public class YamlService {
         }
         try {
             rewardYaml.load(file);
+            loadRemindJson();
             return true;
         } catch (Exception e) {
             e.printStackTrace();
@@ -73,4 +80,24 @@ public class YamlService {
         return false;
     }
 
+    public boolean loadRemindJson() {
+        YamlConfiguration rewardYaml = YamlData.rewardYaml;
+        Set<String> keys = rewardYaml.getKeys(false);
+        for (String key : keys) {
+            ConfigurationSection configurationSection = rewardYaml.getConfigurationSection(key);
+            Set<String> keys1 = configurationSection.getKeys(false);
+            if (keys1.contains("remind")) {
+                JsonObject jsonObject = new JsonObject();
+                jsonObject.add("reward",new JsonPrimitive(key));
+                JsonElement jsonElement = new JsonPrimitive(configurationSection.getBoolean("remind", false));
+                jsonObject.add("remind", jsonElement);
+                if (keys1.contains("permission")) {
+                    JsonElement jsonElement1 = new JsonPrimitive(configurationSection.getString("permission"));
+                    jsonObject.add("permission", jsonElement1);
+                }
+                YamlData.remindJson.add(jsonObject);
+            }
+        }
+        return true;
+    }
 }

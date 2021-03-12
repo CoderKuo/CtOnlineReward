@@ -37,4 +37,21 @@ Setting:
     message:
       joinAfk: '&c&l[在线奖励] 你已进入挂机模式,将不再记录在线时间!'
       levelAfk: '&a&l[在线奖励] 你已离开挂机模式,开始记录在线时间!'
-
+  #公告提醒相关配置
+  remind:
+    #是否打开公告提醒
+    use: true
+    #提醒间隔时间  单位分钟
+    time: 3
+    message: '{"text":"[在线奖励]有奖励可领取,点击领取","color":"green","clickEvent":{"action":"run_command","value":"/cor"},"hoverEvent":{"action":"show_text","value":{"text":"点击打开菜单"}}'
+  #在线提醒配置
+  onlineRemind:
+    #是否打开在线提醒
+    use: true
+    remindValues:
+      -
+        OnlineTime: 10
+        Message: '&a你已经在线10分钟了，注意休息哦～'
+      -
+        OnlineTime: 20
+        Message: '&a你已经在线20分钟了，适当游戏怡情，不要时间太长哦～'

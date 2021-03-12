@@ -5,9 +5,11 @@ import cn.ctcraft.ctonlinereward.database.*;
 import cn.ctcraft.ctonlinereward.inventory.RewardSetInventoryMonitor;
 import cn.ctcraft.ctonlinereward.listner.InventoryMonitor;
 import cn.ctcraft.ctonlinereward.service.OnlineTimer;
+import cn.ctcraft.ctonlinereward.service.RemindTimer;
 import cn.ctcraft.ctonlinereward.service.YamlService;
 import cn.ctcraft.ctonlinereward.service.afk.AfkService;
 import cn.ctcraft.ctonlinereward.service.afk.AfkTimer;
+import cn.ctcraft.ctonlinereward.utils.updater.ConfigUpdater;
 import cn.ctcraft.ctonlinereward.utils.updater.LangUpdater;
 import cn.ctcraft.ctonlinereward.utils.version;
 import com.zaxxer.hikari.HikariDataSource;
@@ -100,13 +102,22 @@ public final class CtOnlineReward extends JavaPlugin {
 
         OnlineTimer.getInstance().runTaskTimerAsynchronously(this,1200,1200);
 
-        int time = getConfig().getInt("Setting.afkConfig.time");
+        boolean afk = getConfig().getBoolean("Setting.afkConfig.use");
+        if (afk){
+            int time = getConfig().getInt("Setting.afkConfig.time");
 
-        String string = getConfig().getString("Setting.afkConfig.mode");
-        if (string.equalsIgnoreCase("strong")){
-            AfkService.getInstance().openStrongMode();
+            String string = getConfig().getString("Setting.afkConfig.mode");
+            if (string.equalsIgnoreCase("strong")){
+                AfkService.getInstance().openStrongMode();
+            }
+            new AfkTimer().runTaskTimerAsynchronously(this,0,time*60*20);
         }
-        new AfkTimer().runTaskTimerAsynchronously(this,0,time*60*20);
+        boolean onlineRemind = getConfig().getBoolean("Setting.onlineRemind.use");
+        if (onlineRemind){
+            int anInt = getConfig().getInt("Setting.onlineRemind.time");
+            new RemindTimer().runTaskTimerAsynchronously(this,anInt*60*20,anInt*60*20);
+        }
+
 
         logger.info("§a§l● 在线奖励加载成功!");
 
@@ -153,6 +164,9 @@ public final class CtOnlineReward extends JavaPlugin {
         if(b2){
             logger.info("§a§l● 奖励配置文件加载成功!");
         }
+
+        ConfigUpdater configUpdater = new ConfigUpdater();
+        configUpdater.getNetWorkConfig();
 
     }
 

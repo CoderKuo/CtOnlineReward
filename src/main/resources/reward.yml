@@ -5,6 +5,8 @@
   time: "{onlineTime}>=10"
   rewardData: '10min'
   permission: 'CtOnlineReward.reward.10min'
+  #可领取时公告提醒
+  remind: true
   command:
     PlayerCommands:
       - 'say 我领取了十分钟在线奖励'
