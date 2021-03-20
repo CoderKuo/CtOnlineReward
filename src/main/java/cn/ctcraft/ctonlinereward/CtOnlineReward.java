@@ -112,9 +112,9 @@ public final class CtOnlineReward extends JavaPlugin {
             }
             new AfkTimer().runTaskTimerAsynchronously(this,0,time*60*20);
         }
-        boolean onlineRemind = getConfig().getBoolean("Setting.onlineRemind.use");
+        boolean onlineRemind = getConfig().getBoolean("Setting.remind.use");
         if (onlineRemind){
-            int anInt = getConfig().getInt("Setting.onlineRemind.time");
+            int anInt = getConfig().getInt("Setting.remind.time");
             new RemindTimer().runTaskTimerAsynchronously(this,anInt*60*20,anInt*60*20);
         }
 

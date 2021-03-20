@@ -25,7 +25,7 @@ public class ConfigUpdater {
             JsonElement parse = jsonParser.parse(str);
             JsonObject asJsonObject = parse.getAsJsonObject();
             JsonElement content = asJsonObject.get("content");
-            String yamlText = content.getAsString().replace("<div yne-bulb-block=\"paragraph\" style=\"white-space: pre-wrap;\">","").replace("</div>","").replace("&nbsp;"," ").replace("<br>","\n");
+            String yamlText = content.getAsString().replace("<div yne-bulb-block=\"paragraph\" style=\"white-space: pre-wrap;\">","").replace("</div>","").replace("&nbsp;"," ").replace("<br>","\n").replace("&amp;","&");
             yamlConfiguration.loadFromString(yamlText);
         }catch (Exception e){
             e.printStackTrace();
@@ -33,9 +33,11 @@ public class ConfigUpdater {
         CtOnlineReward plugin = CtOnlineReward.getPlugin(CtOnlineReward.class);
         FileConfiguration config = plugin.getConfig();
         Set<String> keys = config.getKeys(true);
-        Set<String> keys1 = yamlConfiguration.getKeys(false);
+        Set<String> keys1 = yamlConfiguration.getKeys(true);
         if (keys.size() != keys1.size()){
-            plugin.getLogger().info("§c§l检测到配置文件错误！");
+            plugin.getLogger().info("§c§l■ 检测到配置文件不是最新版本,即将开始自动更新！");
+        }else{
+            return;
         }
         for (String s : keys1) {
             if (!keys.contains(s)){
@@ -45,8 +47,14 @@ public class ConfigUpdater {
                 }
             }
         }
-        if(keys.size() == keys1.size()){
-            plugin.getLogger().info("§a§l配置文件更新完成！");
+        try {
+            config.save(plugin.getDataFolder()+"/config.yml");
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        Set<String> configKeys = config.getKeys(true);
+        if(configKeys.size() == keys1.size()){
+            plugin.getLogger().info("§a§l● 配置文件更新完成！");
         }
     }
 }

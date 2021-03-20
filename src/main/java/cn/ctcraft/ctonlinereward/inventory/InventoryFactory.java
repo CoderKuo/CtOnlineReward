@@ -236,6 +236,10 @@ public class InventoryFactory {
 
     private RewardStatus getRewardStatus(Player player,String rewardId){
         ConfigurationSection configurationSection = YamlData.rewardYaml.getConfigurationSection(rewardId);
+        if (configurationSection == null){
+            ctOnlineReward.getLogger().warning("§c§l■ 未找到奖励配置 §f§n" + rewardId+"§c§l 请检查reward.yml配置文件中是否有指定配置!");
+            return RewardStatus.before;
+        }
         Set<String> keys = configurationSection.getKeys(false);
         if(!keys.contains("time")){
             return RewardStatus.before;

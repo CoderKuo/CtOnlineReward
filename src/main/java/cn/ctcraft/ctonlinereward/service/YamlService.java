@@ -3,10 +3,7 @@ package cn.ctcraft.ctonlinereward.service;
 import cn.ctcraft.ctonlinereward.CtOnlineReward;
 import cn.ctcraft.ctonlinereward.database.YamlData;
 import cn.ctcraft.ctonlinereward.utils.Util;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import com.google.gson.JsonPrimitive;
+import com.google.gson.*;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -82,6 +79,7 @@ public class YamlService {
 
     public boolean loadRemindJson() {
         YamlConfiguration rewardYaml = YamlData.rewardYaml;
+        YamlData.remindJson = new JsonArray();
         Set<String> keys = rewardYaml.getKeys(false);
         for (String key : keys) {
             ConfigurationSection configurationSection = rewardYaml.getConfigurationSection(key);
