@@ -39,11 +39,11 @@ public class InventoryMonitor implements Listener {
 
     @EventHandler
     public void InventoryClick(InventoryClickEvent e) {
-        Inventory Inventory = e.getInventory();
-        if (Inventory == null) {
+        Inventory inventory = e.getInventory();
+        if (inventory == null) {
             return;
         }
-        holder = Inventory.getHolder();
+        holder = inventory.getHolder();
         if (!(holder instanceof MainInventoryHolder)) {
             return;
         }

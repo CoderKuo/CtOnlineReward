@@ -43,7 +43,7 @@ Setting:
     use: true
     #提醒间隔时间  单位分钟
     time: 3
-    message: '{"text":"[在线奖励]有奖励可领取,点击领取","color":"green","clickEvent":{"action":"run_command","value":"/cor"},"hoverEvent":{"action":"show_text","value":{"text":"点击打开菜单"}}}'
+    message: '[{"text": "[在线奖励]有奖励可领取,点击领取","color": "green","clickEvent": {"action": "run_command","value": "/cor"},"hoverEvent": {"action": "show_text","value": {"text": "点击打开菜单"}}}, {"text": "[点击关闭提醒]","color": "red","clickEvent": {"action": "run_command","value": "/cor remind off"}}]'
   #在线提醒配置
   onlineRemind:
     #是否打开在线提醒

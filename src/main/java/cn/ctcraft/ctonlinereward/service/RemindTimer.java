@@ -16,13 +16,11 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class RemindTimer extends BukkitRunnable {
     private final CtOnlineReward ctOnlineReward;
+     public static List<Player> players = new ArrayList<>();
 
     public RemindTimer() {
         ctOnlineReward = CtOnlineReward.getPlugin(CtOnlineReward.class);
@@ -39,8 +37,9 @@ public class RemindTimer extends BukkitRunnable {
                 if (remind) {
                     if (asJsonObject.has("permission")) {
                         sendMessage(asJsonObject.get("permission").getAsString(),asJsonObject.get("reward").getAsString());
+                    }else {
+                        sendMessage(asJsonObject.get("reward").getAsString());
                     }
-                    sendMessage(asJsonObject.get("reward").getAsString());
                 }
 
             }
@@ -58,15 +57,20 @@ public class RemindTimer extends BukkitRunnable {
             if (permission != null && !onlinePlayer.hasPermission(permission)){
                 return;
             }
+            if (players.contains(onlinePlayer)){
+                return;
+            }
             boolean b = hasNotReceivedReward(onlinePlayer, rewardId);
             if (b) {
                 FileConfiguration config = ctOnlineReward.getConfig();
                 String message = config.getString("Setting.remind.message");
                 JsonElement parse = new JsonParser().parse(message);
-                boolean jsonObject = parse.isJsonObject();
-                if (jsonObject) {
+                boolean jsonObject = parse.isJsonNull();
+                if (!jsonObject) {
                     BaseComponent[] parse1 = ComponentSerializer.parse(message);
-                    onlinePlayer.spigot().sendMessage(parse1);
+                    for (BaseComponent baseComponent : parse1) {
+                        onlinePlayer.spigot().sendMessage(baseComponent);
+                    }
                 }else{
                     onlinePlayer.sendMessage(message.replace("&","§"));
                 }

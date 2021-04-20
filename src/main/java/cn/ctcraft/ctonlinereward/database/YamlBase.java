@@ -161,17 +161,19 @@ public class YamlBase implements DataService {
         return onlineTime;
     }
 
-}
 
-class FilterBySuffix implements FilenameFilter {
-    private String suffix;
+    public class FilterBySuffix implements FilenameFilter {
+        private String suffix;
 
-    public FilterBySuffix(String suffix) {
-        this.suffix = suffix;
+        public FilterBySuffix(String suffix) {
+            this.suffix = suffix;
+        }
+
+        @Override
+        public boolean accept(File dir, String name) {
+            return name.endsWith(suffix);
+        }
     }
 
-    @Override
-    public boolean accept(File dir, String name) {
-        return name.endsWith(suffix);
-    }
 }
+
