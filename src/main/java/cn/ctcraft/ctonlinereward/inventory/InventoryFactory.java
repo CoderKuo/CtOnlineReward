@@ -7,6 +7,7 @@ import cn.ctcraft.ctonlinereward.database.YamlData;
 import cn.ctcraft.ctonlinereward.service.RewardStatus;
 import cn.ctcraft.ctonlinereward.service.YamlService;
 import cn.ctcraft.ctonlinereward.service.rewardHandler.RewardOnlineTimeHandler;
+import cn.ctcraft.ctonlinereward.utils.Position;
 import cn.ctcraft.ctonlinereward.utils.Util;
 import me.clip.placeholderapi.PlaceholderAPI;
 import org.bukkit.Bukkit;
@@ -21,10 +22,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Pattern;
 
 public class InventoryFactory {
@@ -63,24 +61,42 @@ public class InventoryFactory {
             Set<String> keys1 = value.getKeys(false);
 
             if(keys1.contains("index")){
-                int index = value.getInt("index");
-                inventory.setItem(index,valueItemStack);
+                List<Integer> indexs = new ArrayList<>();
+                Object index = value.get("index");
+                if (index instanceof Integer){
+                    indexs.add((Integer) index);
+                }else{
+                    String x = value.getString("index.x");
+                    String y = value.getString("index.y");
+                    indexs = Position.get(x, y);
+                }
+                for (Integer integer : indexs) {
+                    inventory.setItem(integer,valueItemStack);
+                }
                 if(keys1.contains("mode")){
                     String mode = value.getString("mode");
                     Map<Integer, String> modeMap = mainInventoryHolder.modeMap;
-                    modeMap.put(index,mode);
+                    for (Integer integer : indexs) {
+                        modeMap.put(integer,mode);
+                    }
                     if(mode.equalsIgnoreCase("reward")){
                         RewardEntity rewardEntity = map.get(valueItemStack);
                         Map<Integer, RewardEntity> statusMap = mainInventoryHolder.statusMap;
-                        statusMap.put(index,rewardEntity);
+                        for (Integer integer : indexs) {
+                            statusMap.put(integer,rewardEntity);
+                        }
                     }
                     if(mode.equalsIgnoreCase("command")){
                         ConfigurationSection configurationSection = getItemStackCommand(value);
-                        mainInventoryHolder.commandMap.put(index,configurationSection);
+                        for (Integer integer : indexs) {
+                            mainInventoryHolder.commandMap.put(integer,configurationSection);
+                        }
                     }
                     if(mode.equalsIgnoreCase("gui")){
                         if(keys1.contains("gui")){
-                            mainInventoryHolder.guiMap.put(index,value.getString("gui"));
+                            for (Integer integer : indexs) {
+                                mainInventoryHolder.guiMap.put(integer,value.getString("gui"));
+                            }
                         }
                     }
                 }

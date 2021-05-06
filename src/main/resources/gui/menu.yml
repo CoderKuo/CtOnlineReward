@@ -9,7 +9,9 @@ values:
       enchantment: true
     lore:
       - '&a&n十分钟在线奖励'
-    index: 10
+    index:
+      x: 2
+      y: 2
     mode: reward
     rewardId: 10min
     extend:
@@ -45,7 +47,9 @@ values:
       enchantment: true
     lore:
       - '&e&l这是一个执行命令示例'
-    index: 12
+    index:
+      x: 4
+      y: 2
     mode: command
     command:
       PlayerCommands:
@@ -62,6 +66,8 @@ values:
       enchantment: true
     lore:
       - '&e&l这是一个打开GUI示例'
-    index: 14
+    index:
+      x: 6
+      y: 2
     mode: gui
     gui: 'extendMenu.yml'
