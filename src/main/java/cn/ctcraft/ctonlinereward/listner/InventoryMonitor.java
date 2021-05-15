@@ -125,30 +125,33 @@ public class InventoryMonitor implements Listener {
                 return;
             }
             try {
-                boolean b = permissionHandler(rewardEntity.getRewardID(), player);
-                if (b){
-                    DataService playerDataService = CtOnlineReward.dataService;
-                    boolean b1 = playerDataService.addRewardToPlayData(rewardEntity.getRewardID(), player);
-                    if (b1) {
-                        Sound sound = getSound(rewardEntity.getRewardID());
-                        if (sound != null) {
-                            player.playSound(player.getLocation(), sound, 1F, 1F);
-                        }
+                // check the permission of player
+                if (permissionHandler(rewardEntity.getRewardID(), player)) {
+                    List<ItemStack> itemStackFromRewardId = rewardService.getItemStackFromRewardId(rewardEntity.getRewardID());
 
-                        List<ItemStack> itemStackFromRewardId = rewardService.getItemStackFromRewardId(rewardEntity.getRewardID());
-                        if (itemStackFromRewardId != null) {
+                    // check the empty size of player inventory
+                    if (itemStackFromRewardId != null && isPlayerInventorySizeEnough(itemStackFromRewardId, player)) {
+                        DataService playerDataService = CtOnlineReward.dataService;
+                        boolean b1 = playerDataService.addRewardToPlayData(rewardEntity.getRewardID(), player);
+                        if (b1) {
+                            Sound sound = getSound(rewardEntity.getRewardID());
+                            if (sound != null) {
+                                player.playSound(player.getLocation(), sound, 1F, 1F);
+                            }
+
                             givePlayerItem(itemStackFromRewardId, player);
+                            executeCommand(rewardEntity.getRewardID(), player);
+                            giveMoney(player, rewardEntity.getRewardID());
+                            action(rewardEntity.getRewardID(), player);
                         }
-                        executeCommand(rewardEntity.getRewardID(), player);
-                        giveMoney(player, rewardEntity.getRewardID());
-                        action(rewardEntity.getRewardID(), player);
+                    } else {
+                        player.sendMessage(CtOnlineReward.languageHandler.getLang("reward.volume").replace("{rewardSize}", String.valueOf(itemStackFromRewardId.size())));
+                        player.sendMessage(CtOnlineReward.languageHandler.getLang("reward.volume2"));
                     }
-                }else{
+                } else {
                     String lang = CtOnlineReward.languageHandler.getLang("reward.volume3");
                     player.sendMessage(lang);
-
                 }
-
 
             } catch (Exception ex) {
                 ctOnlineReward.getLogger().warning("§c§l■ 奖励配置异常!");
@@ -157,7 +160,7 @@ public class InventoryMonitor implements Listener {
         }
     }
 
-    private boolean permissionHandler(String rewardId,Player player){
+    private boolean permissionHandler(String rewardId, Player player) {
         YamlConfiguration rewardYaml = YamlData.rewardYaml;
         Set<String> rewardYamlKeys = rewardYaml.getKeys(false);
         if (!rewardYamlKeys.contains(rewardId)) {
@@ -216,6 +219,8 @@ public class InventoryMonitor implements Listener {
                 String guiText = actionContent.replace("[openGUI]", "").replace(" ", "");
                 Inventory build = InventoryFactory.build(guiText, player);
                 player.openInventory(build);
+                break;
+            default:
                 break;
         }
     }
@@ -302,28 +307,11 @@ public class InventoryMonitor implements Listener {
     }
 
     private boolean givePlayerItem(List<ItemStack> list, Player player) {
-        PlayerInventory inventory = player.getInventory();
-        int size = 0;
-        for (int i = 0; i < 36; i++) {
-            ItemStack item = inventory.getItem(i);
-            if (item == null) {
-                size++;
-            }
-        }
-
-        for (int i = 0; i < list.size(); i++) {
-            ItemStack itemStack = list.get(i);
-            if (itemStack == null) {
-                list.remove(i);
-            }
-        }
-
-
-        if (list.size() > size) {
-            player.sendMessage(CtOnlineReward.languageHandler.getLang("reward.volume").replace("{rewardSize}", String.valueOf(list.size())));
-            player.sendMessage(CtOnlineReward.languageHandler.getLang("reward.volume2"));
+        if (!isPlayerInventorySizeEnough(list, player)) {
             return false;
         }
+
+        PlayerInventory inventory = player.getInventory();
         for (ItemStack itemStack : list) {
             if (itemStack != null) {
                 inventory.addItem(itemStack);
@@ -331,5 +319,28 @@ public class InventoryMonitor implements Listener {
         }
 
         return true;
+    }
+
+    private boolean isPlayerInventorySizeEnough(List<ItemStack> itemStacks, Player player) {
+        PlayerInventory inventory = player.getInventory();
+        int emptySize = 0;
+        for (int i = 0; i < 36; i++) {
+            ItemStack item = inventory.getItem(i);
+            if (item == null) {
+                emptySize++;
+            }
+        }
+
+        for (int i = 0; i < itemStacks.size(); i++) {
+            if (itemStacks.get(i) == null) {
+                itemStacks.remove(i);
+            }
+        }
+
+        if (itemStacks.size() > emptySize) {
+            return false;
+        } else {
+            return true;
+        }
     }
 }
