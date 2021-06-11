@@ -9,10 +9,7 @@ import cn.ctcraft.ctonlinereward.service.RemindTimer;
 import cn.ctcraft.ctonlinereward.service.YamlService;
 import cn.ctcraft.ctonlinereward.service.afk.AfkService;
 import cn.ctcraft.ctonlinereward.service.afk.AfkTimer;
-import cn.ctcraft.ctonlinereward.utils.updater.ConfigUpdater;
-import cn.ctcraft.ctonlinereward.utils.updater.LangUpdater;
 import cn.ctcraft.ctonlinereward.utils.version;
-import com.zaxxer.hikari.HikariDataSource;
 import net.milkbowl.vault.economy.Economy;
 import org.black_ixx.playerpoints.PlayerPoints;
 import org.bukkit.Bukkit;
@@ -27,7 +24,6 @@ import org.bukkit.scheduler.BukkitTask;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
-import java.util.Objects;
 import java.util.logging.Logger;
 
 public final class CtOnlineReward extends JavaPlugin {
@@ -100,7 +96,6 @@ public final class CtOnlineReward extends JavaPlugin {
         }
         lang = yamlConfiguration;
 
-        LangUpdater.exec();
 
         languageHandler = new LanguageHandler();
 
