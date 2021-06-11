@@ -12,3 +12,13 @@ values:
     index: 12
     mode: gui
     gui: 'menu.yml'
+  head:
+    name: '&c&l头颅测试'
+    type:
+      name: 'skull'
+      skull: 'Bubblegum'
+    lore:
+      - '&e&l头颅测试'
+    index: 14
+    mode: gui
+    gui: 'menu.yml'

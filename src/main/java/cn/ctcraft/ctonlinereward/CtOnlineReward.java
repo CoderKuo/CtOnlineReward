@@ -36,6 +36,7 @@ public final class CtOnlineReward extends JavaPlugin {
     public static HikariCPBase hikariCPBase;
     public static YamlConfiguration lang;
     public static LanguageHandler languageHandler;
+    public static YamlConfiguration placeholder;
 
 
     @Override
@@ -74,7 +75,8 @@ public final class CtOnlineReward extends JavaPlugin {
 
 
         if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
-            Placeholder.getInstance().register();
+            Placeholder placeholder = new Placeholder();
+            placeholder.register();
         } else {
             getLogger().warning("§e§l未找到PlaceholderAPI.");
         }
@@ -151,7 +153,7 @@ public final class CtOnlineReward extends JavaPlugin {
                 logger.info("§a§l● Gui配置文件加载成功,共加载" + YamlData.guiYaml.size() + "个配置文件!");
             }
         } catch (Exception e) {
-            logger.info("§c§l■ Gui配置文件加载失败!");
+            logger.warning("§c§l■ Gui配置文件加载失败!");
 
             e.printStackTrace();
         }
@@ -166,8 +168,19 @@ public final class CtOnlineReward extends JavaPlugin {
             logger.info("§a§l● 奖励配置文件加载成功!");
         }
 
-        ConfigUpdater configUpdater = new ConfigUpdater();
-        configUpdater.getNetWorkConfig();
+        File placeholderFile = new File(getDataFolder() + "/placeholder.yml");
+        if (!placeholderFile.exists()){
+            saveResource("placeholder.yml",false);
+        }
+        placeholder = new YamlConfiguration();
+        try {
+            placeholder.load(placeholderFile);
+            logger.info("§a§l● papi配置文件加载成功!");
+
+        } catch (Exception e) {
+            logger.warning("§c§l■ papi变量配置文件加载失败!");
+            e.printStackTrace();
+        }
 
     }
 

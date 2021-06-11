@@ -2,12 +2,13 @@ package cn.ctcraft.ctonlinereward.service.rewardHandler;
 
 import cn.ctcraft.ctonlinereward.CtOnlineReward;
 import cn.ctcraft.ctonlinereward.database.DataService;
-import cn.ctcraft.ctonlinereward.utils.Arithmetic;
+import com.udojava.evalex.Expression;
 import org.bukkit.entity.Player;
 
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
+import java.math.BigDecimal;
 
 public class RewardOnlineTimeHandler {
     private DataService dataService = CtOnlineReward.dataService;
@@ -22,7 +23,13 @@ public class RewardOnlineTimeHandler {
         String temp = variablesHandler(player, timeFormula);
         ScriptEngine javaScript = new ScriptEngineManager().getEngineByName("JavaScript");
         if (javaScript == null){
-            return Arithmetic.exc(temp);
+            Expression expression = new Expression(temp);
+            BigDecimal eval = expression.eval();
+            if (eval.intValue() == 1){
+                return true;
+            }else{
+                return false;
+            }
         }
         try {
             return (boolean) javaScript.eval(temp);

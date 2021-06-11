@@ -1,0 +1,9 @@
+allOnlineTime:
+  text: "onlineTimeAllNew"
+  value:
+    type: "all"
+allOnlineTimeMin:
+  text: "onlineTimeMin"
+  value:
+    type: "all"
+    formula: "x/60"

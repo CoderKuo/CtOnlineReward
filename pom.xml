@@ -6,7 +6,7 @@
 
     <groupId>cn.ctcraft</groupId>
     <artifactId>CtOnlineReward</artifactId>
-    <version>0.1.5</version>
+    <version>0.1.6</version>
     <packaging>jar</packaging>
 
     <name>CtOnlineReward</name>
@@ -105,6 +105,13 @@
             <artifactId>HikariCP</artifactId>
             <version>3.4.5</version>
             <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>SkullAPI</groupId>
+            <artifactId>SkullAPI</artifactId>
+            <version>1.0</version>
+            <scope>system</scope>
+            <systemPath>${basedir}/SkullAPI.jar</systemPath>
         </dependency>
     </dependencies>
 </project>

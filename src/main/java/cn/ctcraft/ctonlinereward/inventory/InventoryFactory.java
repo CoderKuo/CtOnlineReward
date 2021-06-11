@@ -9,9 +9,11 @@ import cn.ctcraft.ctonlinereward.service.YamlService;
 import cn.ctcraft.ctonlinereward.service.rewardHandler.RewardOnlineTimeHandler;
 import cn.ctcraft.ctonlinereward.utils.Position;
 import cn.ctcraft.ctonlinereward.utils.Util;
+import me.albert.skullapi.SkullAPI;
 import me.clip.placeholderapi.PlaceholderAPI;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.SkullType;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.enchantments.Enchantment;
@@ -19,6 +21,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.SkullMeta;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
@@ -179,6 +182,10 @@ public class InventoryFactory {
         Set<String> typeKeys = type.getKeys(false);
         if(typeKeys.contains("name")){
             String name = type.getString("name");
+            if (name.equalsIgnoreCase("skull")){
+                String skull = type.getString("skull");
+                itemStack = SkullAPI.getSkull(skull);
+            }
             if(itemStack == null){
                 itemStack = new ItemStack(getItemStackByNMS(name));
             }else {
@@ -247,6 +254,13 @@ public class InventoryFactory {
             lore.replaceAll(a->a.replace("&","§"));
             List<String> list = PlaceholderAPI.setPlaceholders(player, lore);
             itemMeta.setLore(list);
+        }
+        if (itemMeta instanceof SkullMeta && configKeys.contains("skull")){
+            String skull = config.getString("skull");
+            boolean b = ((SkullMeta) itemMeta).setOwner("d9afe148-2b93-4ad9-9326-a965824c2428");
+            if (!b){
+                ctOnlineReward.getLogger().warning("§c§l 头颅读取失败！");
+            }
         }
     }
 
