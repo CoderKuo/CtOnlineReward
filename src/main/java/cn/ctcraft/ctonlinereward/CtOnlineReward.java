@@ -4,6 +4,7 @@ import cn.ctcraft.ctonlinereward.command.CommandHandler;
 import cn.ctcraft.ctonlinereward.database.*;
 import cn.ctcraft.ctonlinereward.inventory.RewardSetInventoryMonitor;
 import cn.ctcraft.ctonlinereward.listner.InventoryMonitor;
+import cn.ctcraft.ctonlinereward.listner.PlayerMonitor;
 import cn.ctcraft.ctonlinereward.service.OnlineTimer;
 import cn.ctcraft.ctonlinereward.service.RemindTimer;
 import cn.ctcraft.ctonlinereward.service.YamlService;
@@ -42,6 +43,7 @@ public final class CtOnlineReward extends JavaPlugin {
         this.getCommand("cor").setExecutor(CommandHandler.getInstance());
         getServer().getPluginManager().registerEvents(RewardSetInventoryMonitor.getInstance(), this);
         getServer().getPluginManager().registerEvents(new InventoryMonitor(), this);
+        getServer().getPluginManager().registerEvents(new PlayerMonitor(), this);
 
         load();
 
