@@ -15,12 +15,16 @@ import java.util.List;
 import java.util.UUID;
 
 public class OnlineTimer extends BukkitRunnable {
-    private static OnlineTimer instance = new OnlineTimer();
     private static HashMap<UUID, Long> onlinePlayerTime = new HashMap<>();
+    private static OnlineTimer instance = new OnlineTimer();
     private DataService dataService = CtOnlineReward.dataService;
     private CtOnlineReward ctOnlineReward = CtOnlineReward.getPlugin(CtOnlineReward.class);
 
     private OnlineTimer() {
+        //插件可能在服务器正常开启后启用 此时手动添加在线玩家
+        for (Player onlinePlayer : Bukkit.getServer().getOnlinePlayers()) {
+            addOnlinePlayer(onlinePlayer,onlinePlayer.getLastPlayed());
+        }
     }
 
     public static OnlineTimer getInstance() {
@@ -40,10 +44,10 @@ public class OnlineTimer extends BukkitRunnable {
         Collection<? extends Player> onlinePlayers = Bukkit.getServer().getOnlinePlayers();
         for (Player player : onlinePlayers) {
             if (!onlinePlayerTime.containsKey(player.getUniqueId())) {
-                return;
+                continue;
             }
             if (AfkService.getInstance().isAfk(player)) {
-                return;
+                continue;
             }
 
             int numMinutes = dataService.getPlayerOnlineTime(player);
