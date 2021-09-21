@@ -77,13 +77,9 @@ public class SQLiteBase implements DataService {
 
     @Override
     public void addPlayerOnlineTime(Player player, int time) {
-        Connection connection = null;
-        PreparedStatement ps = null;
-        try {
-            connection = getConnection();
-            String date = Util.getDate();
-            String sql = "update `"+date+"` set `online_data` = ? where `uuid` = ?";
-            ps = connection.prepareStatement(sql);
+        String date = Util.getDate();
+        String sql = "update `"+date+"` set `online_data` = ? where `uuid` = ?";
+        try (Connection connection = getConnection();PreparedStatement ps = connection.prepareStatement(sql);){
             JsonObject playerOnlineData = getPlayerOnlineData(player);
             playerOnlineData.addProperty("time", time);
             String asString = playerOnlineData.toString();
