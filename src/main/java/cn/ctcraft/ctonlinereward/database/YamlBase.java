@@ -22,6 +22,7 @@ public class YamlBase implements DataService {
     private final Lock writeLock=readWriteLock.writeLock();
     public YamlConfiguration getYamlData(){
         readLock.lock();
+        YamlConfiguration pastYamlDataPair=null;
         try {
             File dataFolder = new File(ctOnlineReward.getDataFolder() + "/playerData");
             if (!dataFolder.exists()) {
@@ -53,14 +54,18 @@ public class YamlBase implements DataService {
                         e.printStackTrace();
                     }
                 }
-                //保存数据
                 if (yamlDataPair != null) {
-                    saveData(yamlDataPair.getValue());
+                    //避免死锁 在锁外保存数据
+                    pastYamlDataPair=yamlDataPair.getValue();
                 }
                 yamlDataPair = new AbstractMap.SimpleEntry<>(date, yamlConfiguration);
             }
         }finally {
             readLock.unlock();
+            //避免死锁 在锁外保存数据
+            if(pastYamlDataPair!=null){
+                saveData(pastYamlDataPair);
+            }
         }
         return yamlDataPair.getValue();
     }
