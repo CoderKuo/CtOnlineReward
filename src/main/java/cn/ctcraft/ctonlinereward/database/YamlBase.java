@@ -9,60 +9,73 @@ import org.bukkit.entity.Player;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class YamlBase implements DataService {
-    private CtOnlineReward ctOnlineReward = CtOnlineReward.getPlugin(CtOnlineReward.class);
-    private Map<YamlConfiguration,String> map = new HashMap<>();
-
-
+    private final CtOnlineReward ctOnlineReward = CtOnlineReward.getPlugin(CtOnlineReward.class);
+    private AbstractMap.Entry<String,YamlConfiguration> yamlDataPair = null;
+    private final ReadWriteLock readWriteLock=new ReentrantReadWriteLock(true);
+    private final Lock readLock=readWriteLock.readLock();
+    private final Lock writeLock=readWriteLock.writeLock();
     public YamlConfiguration getYamlData(){
-        File dataFolder = new File(ctOnlineReward.getDataFolder() + "/playerData");
-        if (!dataFolder.exists()) {
-            boolean mkdir = dataFolder.mkdir();
-            if (mkdir) {
-                ctOnlineReward.getLogger().info("§a§l● 玩家数据文件夹构建成功!");
-            } else {
-                return null;
-            }
-        }
-
-
-        String date = Util.getDate();
-        File file = new File(ctOnlineReward.getDataFolder() + "/playerData/" + date + ".yml");
-        YamlConfiguration yamlConfiguration = new YamlConfiguration();
-        map.put(yamlConfiguration,date);
-        if (!file.exists()){
-            try {
-                boolean newFile = file.createNewFile();
-                if (!newFile){
-                    ctOnlineReward.getLogger().warning("§c§l■ 玩家数据创建失败!");
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            return yamlConfiguration;
-        }
+        readLock.lock();
         try {
-            yamlConfiguration.load(file);
-        }catch (Exception e){
-            e.printStackTrace();
+            File dataFolder = new File(ctOnlineReward.getDataFolder() + "/playerData");
+            if (!dataFolder.exists()) {
+                boolean mkdir = dataFolder.mkdir();
+                if (mkdir) {
+                    ctOnlineReward.getLogger().info("§a§l● 玩家数据文件夹构建成功!");
+                } else {
+                    return null;
+                }
+            }
+            String date = Util.getDate();
+            //比较日期，未初始化或日期已更新即进行初始化并保存数据
+            if (yamlDataPair == null || !yamlDataPair.getKey().equals(date)) {
+                File file = new File(ctOnlineReward.getDataFolder() + "/playerData/" + date + ".yml");
+                YamlConfiguration yamlConfiguration = new YamlConfiguration();
+                if (!file.exists()) {
+                    try {
+                        boolean newFile = file.createNewFile();
+                        if (!newFile) {
+                            ctOnlineReward.getLogger().warning("§c§l■ 玩家数据创建失败!");
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                } else {
+                    try {
+                        yamlConfiguration.load(file);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+                //保存数据
+                if (yamlDataPair != null) {
+                    saveData(yamlDataPair.getValue());
+                }
+                yamlDataPair = new AbstractMap.SimpleEntry<>(date, yamlConfiguration);
+            }
+        }finally {
+            readLock.unlock();
         }
-        return yamlConfiguration;
+        return yamlDataPair.getValue();
     }
 
     private void saveData(YamlConfiguration yamlConfiguration){
-        String s = map.get(yamlConfiguration);
+        String s = yamlDataPair.getKey();
         File file = new File(ctOnlineReward.getDataFolder() + "/playerData/" + s + ".yml");
+        writeLock.lock();
         try {
             yamlConfiguration.save(file);
         }catch (Exception e){
             e.printStackTrace();
+        }finally {
+            writeLock.unlock();
         }
-        map.remove(yamlConfiguration);
 
     }
 
