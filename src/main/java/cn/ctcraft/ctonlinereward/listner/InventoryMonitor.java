@@ -26,7 +26,6 @@ import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 
-import javax.xml.ws.Holder;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;

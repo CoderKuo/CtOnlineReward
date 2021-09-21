@@ -9,93 +9,112 @@ import org.bukkit.entity.Player;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class YamlBase implements DataService {
-    private CtOnlineReward ctOnlineReward = CtOnlineReward.getPlugin(CtOnlineReward.class);
-    private Map<YamlConfiguration,String> map = new HashMap<>();
-
-
-    public YamlConfiguration getYamlData(){
-        File dataFolder = new File(ctOnlineReward.getDataFolder() + "/playerData");
-        if (!dataFolder.exists()) {
-            boolean mkdir = dataFolder.mkdir();
-            if (mkdir) {
-                ctOnlineReward.getLogger().info("§a§l● 玩家数据文件夹构建成功!");
-            } else {
-                return null;
-            }
-        }
-
-
-        String date = Util.getDate();
-        File file = new File(ctOnlineReward.getDataFolder() + "/playerData/" + date + ".yml");
-        YamlConfiguration yamlConfiguration = new YamlConfiguration();
-        map.put(yamlConfiguration,date);
-        if (!file.exists()){
-            try {
-                boolean newFile = file.createNewFile();
-                if (!newFile){
-                    ctOnlineReward.getLogger().warning("§c§l■ 玩家数据创建失败!");
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            return yamlConfiguration;
-        }
+    private final CtOnlineReward ctOnlineReward = CtOnlineReward.getPlugin(CtOnlineReward.class);
+    private AbstractMap.Entry<String,YamlConfiguration> yamlDataPair = null;
+    private final ReadWriteLock readWriteLock=new ReentrantReadWriteLock(true);
+    private final Lock readLock=readWriteLock.readLock();
+    private final Lock writeLock=readWriteLock.writeLock();
+    public AbstractMap.Entry<String,YamlConfiguration> getYamlData(){
+        readLock.lock();
+        Map.Entry<String,YamlConfiguration> pastYamlDataPair=null;
         try {
-            yamlConfiguration.load(file);
-        }catch (Exception e){
-            e.printStackTrace();
+            File dataFolder = new File(ctOnlineReward.getDataFolder() + "/playerData");
+            if (!dataFolder.exists()) {
+                boolean mkdir = dataFolder.mkdir();
+                if (mkdir) {
+                    ctOnlineReward.getLogger().info("§a§l● 玩家数据文件夹构建成功!");
+                } else {
+                    return null;
+                }
+            }
+            String date = Util.getDate();
+            //比较日期，未初始化或日期已更新即进行初始化并保存数据
+            if (yamlDataPair == null || !yamlDataPair.getKey().equals(date)) {
+                File file = new File(ctOnlineReward.getDataFolder() + "/playerData/" + date + ".yml");
+                YamlConfiguration yamlConfiguration = new YamlConfiguration();
+                if (!file.exists()) {
+                    try {
+                        boolean newFile = file.createNewFile();
+                        if (!newFile) {
+                            ctOnlineReward.getLogger().warning("§c§l■ 玩家数据创建失败!");
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                } else {
+                    try {
+                        yamlConfiguration.load(file);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+                if (yamlDataPair != null) {
+                    //避免死锁 在锁外保存数据
+                    pastYamlDataPair=yamlDataPair;
+                }
+                yamlDataPair = new AbstractMap.SimpleEntry<>(date, yamlConfiguration);
+            }
+        }finally {
+            readLock.unlock();
+            //避免死锁 在锁外保存数据
+            if(pastYamlDataPair!=null){
+                saveData(pastYamlDataPair);
+            }
         }
-        return yamlConfiguration;
+        return yamlDataPair;
     }
 
-    private void saveData(YamlConfiguration yamlConfiguration){
-        String s = map.get(yamlConfiguration);
+    private void saveData(Map.Entry<String,YamlConfiguration> yamlDataPair){
+        String s = yamlDataPair.getKey();
         File file = new File(ctOnlineReward.getDataFolder() + "/playerData/" + s + ".yml");
+        writeLock.lock();
         try {
-            yamlConfiguration.save(file);
+            yamlDataPair.getValue().save(file);
         }catch (Exception e){
             e.printStackTrace();
+        }finally {
+            writeLock.unlock();
         }
-        map.remove(yamlConfiguration);
 
     }
 
 
     public int getPlayerOnlineTime(Player pLayer){
-        YamlConfiguration playerData = getYamlData();
-        return playerData.getInt(pLayer.getUniqueId().toString()+".time");
+        Map.Entry<String,YamlConfiguration> playerData = getYamlData();
+        return playerData.getValue().getInt(pLayer.getUniqueId().toString()+".time");
     }
 
     public void addPlayerOnlineTime(Player player,int time){
-        YamlConfiguration playerData = getYamlData();
-        playerData.set(player.getUniqueId().toString()+".time",time);
+        Map.Entry<String,YamlConfiguration> playerData = getYamlData();
+        playerData.getValue().set(player.getUniqueId().toString()+".time",time);
         saveData(playerData);
     }
 
     @Override
     public void insertPlayerOnlineTime(Player player,int time) {
-        YamlConfiguration playerData = getYamlData();
-        playerData.set(player.getUniqueId().toString()+".time",time);
+        Map.Entry<String,YamlConfiguration> playerData = getYamlData();
+        playerData.getValue().set(player.getUniqueId().toString()+".time",time);
         saveData(playerData);
     }
 
     public List<String> getPlayerRewardArray(Player player){
-        YamlConfiguration playerData = getYamlData();
-        return playerData.getStringList(player.getUniqueId().toString() + ".reward");
+        Map.Entry<String,YamlConfiguration> playerDataPair = getYamlData();
+        return playerDataPair.getValue().getStringList(player.getUniqueId().toString() + ".reward");
     }
 
     public boolean addRewardToPlayData(String rewardId,Player player){
-        YamlConfiguration playerData = getYamlData();
+        Map.Entry<String,YamlConfiguration> playerDataPair = getYamlData();
+        YamlConfiguration playerData=playerDataPair.getValue();
         List<String> rewardList = playerData.getStringList(player.getUniqueId().toString() + ".reward");
         rewardList.add(rewardId);
         playerData.set(player.getUniqueId().toString()+".reward",rewardList);
-        saveData(playerData);
+        saveData(playerDataPair);
         return true;
     }
 
@@ -106,10 +125,21 @@ public class YamlBase implements DataService {
         for (String s : weekString) {
             File file = new File(ctOnlineReward.getDataFolder() + "/playerData/" + s+".yml");
             if (file.exists()){
-                YamlConfiguration yamlConfiguration = new YamlConfiguration();
                 try {
-                    yamlConfiguration.load(file);
-                    int time = yamlConfiguration.getInt(player.getUniqueId().toString() + ".time");
+                    int time;
+                    //如果是当前文件，使用内存数据
+                    if(file.getName().startsWith(yamlDataPair.getKey())){
+                        readLock.lock();
+                        try {
+                            time = yamlDataPair.getValue().getInt(player.getUniqueId().toString() + ".time");
+                        }finally {
+                            readLock.unlock();
+                        }
+                    }else {
+                        YamlConfiguration yamlConfiguration = new YamlConfiguration();
+                        yamlConfiguration.load(file);
+                        time=yamlConfiguration.getInt(player.getUniqueId().toString() + ".time");
+                    }
                     onlineTime += time;
                 }catch (Exception e){
                     e.printStackTrace();
@@ -126,10 +156,21 @@ public class YamlBase implements DataService {
         for (String s : monthString) {
             File file = new File(ctOnlineReward.getDataFolder() + "/playerData/" + s+".yml");
             if (file.exists()){
-                YamlConfiguration yamlConfiguration = new YamlConfiguration();
                 try {
-                    yamlConfiguration.load(file);
-                    int time = yamlConfiguration.getInt(player.getUniqueId().toString() + ".time");
+                    int time;
+                    //如果是当前文件，使用内存数据
+                    if(file.getName().startsWith(yamlDataPair.getKey())){
+                        readLock.lock();
+                        try {
+                            time = yamlDataPair.getValue().getInt(player.getUniqueId().toString() + ".time");
+                        }finally {
+                            readLock.unlock();
+                        }
+                    }else {
+                        YamlConfiguration yamlConfiguration = new YamlConfiguration();
+                        yamlConfiguration.load(file);
+                        time=yamlConfiguration.getInt(player.getUniqueId().toString() + ".time");
+                    }
                     onlineTime += time;
                 }catch (Exception e){
                     e.printStackTrace();
@@ -149,10 +190,21 @@ public class YamlBase implements DataService {
             return 0;
         }
         for (File file1 : files) {
-            YamlConfiguration yamlConfiguration = new YamlConfiguration();
             try {
-                yamlConfiguration.load(file1);
-                int time = yamlConfiguration.getInt(player.getUniqueId().toString() + ".time");
+                int time;
+                //如果是当前文件，使用内存数据
+                if(file1.getName().startsWith(yamlDataPair.getKey())){
+                    readLock.lock();
+                    try {
+                        time = yamlDataPair.getValue().getInt(player.getUniqueId().toString() + ".time");
+                    }finally {
+                        readLock.unlock();
+                    }
+                }else {
+                    YamlConfiguration yamlConfiguration = new YamlConfiguration();
+                    yamlConfiguration.load(file1);
+                    time=yamlConfiguration.getInt(player.getUniqueId().toString() + ".time");
+                }
                 onlineTime += time;
             }catch (Exception e){
                 e.printStackTrace();
@@ -162,8 +214,8 @@ public class YamlBase implements DataService {
     }
 
 
-    public class FilterBySuffix implements FilenameFilter {
-        private String suffix;
+    public static class FilterBySuffix implements FilenameFilter {
+        private final String suffix;
 
         public FilterBySuffix(String suffix) {
             this.suffix = suffix;
