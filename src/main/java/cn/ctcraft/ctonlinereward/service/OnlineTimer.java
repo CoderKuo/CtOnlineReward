@@ -21,6 +21,10 @@ public class OnlineTimer extends BukkitRunnable {
     private CtOnlineReward ctOnlineReward = CtOnlineReward.getPlugin(CtOnlineReward.class);
 
     private OnlineTimer() {
+        //插件可能在服务器正常开启后启用 此时手动添加在线玩家
+        for (Player onlinePlayer : Bukkit.getServer().getOnlinePlayers()) {
+            addOnlinePlayer(onlinePlayer,onlinePlayer.getLastPlayed());
+        }
     }
 
     public static OnlineTimer getInstance() {
@@ -40,10 +44,10 @@ public class OnlineTimer extends BukkitRunnable {
         Collection<? extends Player> onlinePlayers = Bukkit.getServer().getOnlinePlayers();
         for (Player player : onlinePlayers) {
             if (!onlinePlayerTime.containsKey(player.getUniqueId())) {
-                return;
+                continue;
             }
             if (AfkService.getInstance().isAfk(player)) {
-                return;
+                continue;
             }
 
             int numMinutes = dataService.getPlayerOnlineTime(player);
