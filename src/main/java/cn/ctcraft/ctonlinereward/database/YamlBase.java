@@ -128,7 +128,7 @@ public class YamlBase implements DataService {
                 try {
                     int time;
                     //如果是当前文件，使用内存数据
-                    if(file.getName().equals(yamlDataPair.getKey())){
+                    if(file.getName().startsWith(yamlDataPair.getKey())){
                         readLock.lock();
                         try {
                             time = yamlDataPair.getValue().getInt(player.getUniqueId().toString() + ".time");
@@ -159,7 +159,7 @@ public class YamlBase implements DataService {
                 try {
                     int time;
                     //如果是当前文件，使用内存数据
-                    if(file.getName().equals(yamlDataPair.getKey())){
+                    if(file.getName().startsWith(yamlDataPair.getKey())){
                         readLock.lock();
                         try {
                             time = yamlDataPair.getValue().getInt(player.getUniqueId().toString() + ".time");
@@ -193,7 +193,7 @@ public class YamlBase implements DataService {
             try {
                 int time;
                 //如果是当前文件，使用内存数据
-                if(file1.getName().equals(yamlDataPair.getKey())){
+                if(file1.getName().startsWith(yamlDataPair.getKey())){
                     readLock.lock();
                     try {
                         time = yamlDataPair.getValue().getInt(player.getUniqueId().toString() + ".time");
