@@ -57,7 +57,6 @@ public class RewardService {
             boolean b = message.contains("系统找不到指定的文件");
             if(b){
                 int i = message.indexOf("(系统找不到指定的文件。)");
-                System.out.println(i);
                 String substring = message.substring(34, i);
                 ctOnlineReward.getLogger().warning("§c§l■ 找不到奖励数据!");
                 ctOnlineReward.getLogger().warning("§c§l■ 请使用/cor reward set "+substring+"设置奖励数据!");

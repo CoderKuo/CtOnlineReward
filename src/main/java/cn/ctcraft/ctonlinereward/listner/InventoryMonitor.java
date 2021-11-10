@@ -263,8 +263,12 @@ public class InventoryMonitor implements Listener {
         }
         if (keys.contains("points")) {
             int points = economy.getInt("points");
-            PlayerPointsAPI playerPointsAPI = new PlayerPointsAPI(ctOnlineReward.getPlayerPoints());
-            playerPointsAPI.give(player.getUniqueId(), points);
+            try {
+                PlayerPointsAPI playerPointsAPI = new PlayerPointsAPI(ctOnlineReward.getPlayerPoints());
+                playerPointsAPI.give(player.getUniqueId(), points);
+            }catch (NoClassDefFoundError e){
+                ctOnlineReward.getLogger().warning("§c§l■ 未找到点券插件,请勿在配置文件(reward.yml)中配置点券项，如果需要使用点券请安装PlayerPoints");
+            }
         }
     }
 
