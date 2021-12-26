@@ -128,8 +128,6 @@ public class InventoryMonitor implements Listener {
                 if (permissionHandler(rewardEntity.getRewardID(), player)) {
                     List<ItemStack> itemStackFromRewardId = rewardService.getItemStackFromRewardId(rewardEntity.getRewardID());
 
-                    // check the empty size of player inventory
-                    if (itemStackFromRewardId != null && isPlayerInventorySizeEnough(itemStackFromRewardId, player)) {
                         DataService playerDataService = CtOnlineReward.dataService;
                         boolean b1 = playerDataService.addRewardToPlayData(rewardEntity.getRewardID(), player);
                         if (b1) {
@@ -138,15 +136,19 @@ public class InventoryMonitor implements Listener {
                                 player.playSound(player.getLocation(), sound, 1F, 1F);
                             }
 
-                            givePlayerItem(itemStackFromRewardId, player);
+                            if (itemStackFromRewardId != null) {
+                                if (!isPlayerInventorySizeEnough(itemStackFromRewardId, player)) {
+                                    player.sendMessage(CtOnlineReward.languageHandler.getLang("reward.volume").replace("{rewardSize}", String.valueOf(itemStackFromRewardId.size())));
+                                    player.sendMessage(CtOnlineReward.languageHandler.getLang("reward.volume2"));
+                                }else {
+                                    givePlayerItem(itemStackFromRewardId, player);
+                                }
+                            }
                             executeCommand(rewardEntity.getRewardID(), player);
                             giveMoney(player, rewardEntity.getRewardID());
                             action(rewardEntity.getRewardID(), player);
                         }
-                    } else {
-                        player.sendMessage(CtOnlineReward.languageHandler.getLang("reward.volume").replace("{rewardSize}", String.valueOf(itemStackFromRewardId.size())));
-                        player.sendMessage(CtOnlineReward.languageHandler.getLang("reward.volume2"));
-                    }
+
                 } else {
                     String lang = CtOnlineReward.languageHandler.getLang("reward.volume3");
                     player.sendMessage(lang);

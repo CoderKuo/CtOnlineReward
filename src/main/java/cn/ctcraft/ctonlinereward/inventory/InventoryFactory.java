@@ -139,11 +139,13 @@ public class InventoryFactory {
 
     private void extendHandler(ItemStack itemStack,ConfigurationSection value,String rewardId) {
         Set<String> keys = value.getKeys(false);
-        if(!keys.contains("extend")){
-            return;
-        }
         RewardStatus rewardStatus = getRewardStatus(player, rewardId);
         RewardEntity rewardEntity = new RewardEntity(rewardId, rewardStatus);
+
+        if(!keys.contains("extend")){
+            map.put(itemStack,rewardEntity);
+            return;
+        }
         ConfigurationSection extend = value.getConfigurationSection("extend");
 
         switch (rewardStatus){
