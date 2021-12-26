@@ -5,4 +5,4 @@ softdepend: [PlaceholderAPI,PlayerPoints,Vault]
 commands:
   cor:
     description: CtOnlineReward Main Command
-api-version: 1.16
+api-version: 1.13
