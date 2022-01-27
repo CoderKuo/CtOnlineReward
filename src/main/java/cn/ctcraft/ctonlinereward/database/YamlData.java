@@ -11,4 +11,5 @@ public class YamlData {
     public static Map<String, YamlConfiguration> guiYaml = new HashMap<>();
     public static YamlConfiguration rewardYaml = new YamlConfiguration();
     public static JsonArray remindJson = new JsonArray();
+    public static int[] timeLimit = new int[2];
 }

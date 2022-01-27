@@ -61,4 +61,9 @@ public class Util {
         }
         return time.getAsInt();
     }
+
+    public static int timestampToHours(long timestamp){
+        SimpleDateFormat hh = new SimpleDateFormat("hh");
+        return Integer.parseInt(hh.format(timestamp));
+    }
 }

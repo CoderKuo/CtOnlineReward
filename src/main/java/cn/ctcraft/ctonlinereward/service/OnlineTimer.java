@@ -2,9 +2,11 @@ package cn.ctcraft.ctonlinereward.service;
 
 import cn.ctcraft.ctonlinereward.CtOnlineReward;
 import cn.ctcraft.ctonlinereward.database.DataService;
+import cn.ctcraft.ctonlinereward.database.YamlData;
 import cn.ctcraft.ctonlinereward.pojo.OnlineRemind;
 import cn.ctcraft.ctonlinereward.service.afk.AfkService;
 import cn.ctcraft.ctonlinereward.utils.ConfigUtil;
+import cn.ctcraft.ctonlinereward.utils.Util;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -46,13 +48,22 @@ public class OnlineTimer extends BukkitRunnable {
             if (!onlinePlayerTime.containsKey(player.getUniqueId())) {
                 continue;
             }
+            if (YamlData.timeLimit != null){
+                long nowTime = System.currentTimeMillis();
+                int i = Util.timestampToHours(nowTime);
+                if(i < YamlData.timeLimit[0] || i > YamlData.timeLimit[1]){
+                    continue;
+                }
+            }
+
             if (AfkService.getInstance().isAfk(player)) {
                 continue;
             }
 
+
             int numMinutes = dataService.getPlayerOnlineTime(player);
             long playerOnlineTime = onlinePlayerTime.get(player.getUniqueId());
-            long timePast = System.currentTimeMillis() - playerOnlineTime;
+            long timePast =  System.currentTimeMillis() - playerOnlineTime;
             if (timePast > 60 * 1000) {
                 numMinutes += ((Long) (timePast / (60 * 1000))).intValue();
                 dataService.addPlayerOnlineTime(player, numMinutes);

@@ -16,7 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SQLiteBase implements DataService {
-    private CtOnlineReward ctOnlineReward = CtOnlineReward.getPlugin(CtOnlineReward.class);
+    private final CtOnlineReward ctOnlineReward = CtOnlineReward.getPlugin(CtOnlineReward.class);
 
     public SQLiteBase(){
         createTable();
