@@ -21,6 +21,7 @@ import java.util.*;
 
 public class RemindTimer extends BukkitRunnable {
     private final CtOnlineReward ctOnlineReward;
+    //每轮检查时已经提醒过的玩家的名单
      public static List<Player> players = new ArrayList<>();
 
     public RemindTimer() {
@@ -31,6 +32,8 @@ public class RemindTimer extends BukkitRunnable {
     @Override
     public void run() {
         JsonArray remindJson = YamlData.remindJson;
+        //清除提醒过的玩家的名单
+        players.clear();
         for (JsonElement jsonElement : remindJson) {
             JsonObject asJsonObject = jsonElement.getAsJsonObject();
             if (asJsonObject.has("remind")) {
@@ -55,14 +58,18 @@ public class RemindTimer extends BukkitRunnable {
     private void sendMessage(String permission, String rewardId) {
         Collection<? extends Player> onlinePlayers = Bukkit.getOnlinePlayers();
         for (Player onlinePlayer : onlinePlayers) {
+            //玩家没有权限则跳过
             if (permission != null && !onlinePlayer.hasPermission(permission)){
-                return;
+                continue;
             }
+            //该轮已经提醒过了则跳过
             if (players.contains(onlinePlayer)){
-                return;
+                continue;
             }
             boolean b = hasNotReceivedReward(onlinePlayer, rewardId);
             if (b) {
+                //把玩家添加到提醒过的玩家的列表
+                players.add(onlinePlayer);
                 FileConfiguration config = ctOnlineReward.getConfig();
                 String message = config.getString("Setting.remind.message");
                 JsonElement parse = new JsonParser().parse(message);
