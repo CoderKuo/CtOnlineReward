@@ -7,6 +7,8 @@ values:
       name: 'minecraft:glass_bottle'
       #是否打开附魔  部分物品会出现问题，请提前测试
       enchantment: true
+      #可选 设置物品的自定义模型数据.
+      customModelData: 1
     lore:
       - '&a&n十分钟在线奖励'
     index:

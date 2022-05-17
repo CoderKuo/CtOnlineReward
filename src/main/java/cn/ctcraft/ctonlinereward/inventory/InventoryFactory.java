@@ -257,9 +257,17 @@ public class InventoryFactory {
             List<String> list = PlaceholderAPI.setPlaceholders(player, lore);
             itemMeta.setLore(list);
         }
+        if (configKeys.contains("customModelData")){
+            try {
+                Method setCustomModelData = itemMeta.getClass().getMethod("setCustomModelData",Integer.class);
+                setCustomModelData.invoke(itemMeta, config.getInt("customModelData"));
+            }catch (Exception e){
+            }
+        }
+
         if (itemMeta instanceof SkullMeta && configKeys.contains("skull")){
             String skull = config.getString("skull");
-            boolean b = ((SkullMeta) itemMeta).setOwner("d9afe148-2b93-4ad9-9326-a965824c2428");
+            boolean b = ((SkullMeta) itemMeta).setOwner(skull);
             if (!b){
                 ctOnlineReward.getLogger().warning("§c§l 头颅读取失败！");
             }

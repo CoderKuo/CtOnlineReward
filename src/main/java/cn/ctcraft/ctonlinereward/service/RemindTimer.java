@@ -9,6 +9,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.chat.ComponentSerializer;
+import org.apache.commons.lang.ObjectUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -33,12 +34,12 @@ public class RemindTimer extends BukkitRunnable {
         for (JsonElement jsonElement : remindJson) {
             JsonObject asJsonObject = jsonElement.getAsJsonObject();
             if (asJsonObject.has("remind")) {
-                boolean remind = asJsonObject.get("remind").getAsBoolean();
-                if (remind) {
+                if (asJsonObject.get("remind").getAsBoolean()) {
+                    String reward = asJsonObject.get("reward").getAsString();
                     if (asJsonObject.has("permission")) {
-                        sendMessage(asJsonObject.get("permission").getAsString(),asJsonObject.get("reward").getAsString());
+                        sendMessage(asJsonObject.get("permission").getAsString(),reward);
                     }else {
-                        sendMessage(asJsonObject.get("reward").getAsString());
+                        sendMessage(reward);
                     }
                 }
 

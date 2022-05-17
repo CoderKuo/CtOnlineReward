@@ -48,7 +48,7 @@ public class OnlineTimer extends BukkitRunnable {
             if (!onlinePlayerTime.containsKey(player.getUniqueId())) {
                 continue;
             }
-            if (YamlData.timeLimit != null){
+            if (YamlData.timeLimit[0] != -1){
                 long nowTime = System.currentTimeMillis();
                 int i = Util.timestampToHours(nowTime);
                 if(i < YamlData.timeLimit[0] || i > YamlData.timeLimit[1]){

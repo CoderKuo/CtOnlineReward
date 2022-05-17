@@ -7,6 +7,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.zaxxer.hikari.HikariDataSource;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
 import java.sql.*;
@@ -64,7 +65,7 @@ public class MysqlBase implements DataService {
     }
 
     @Override
-    public int getPlayerOnlineTime(Player pLayer) {
+    public int getPlayerOnlineTime(OfflinePlayer pLayer) {
         JsonObject playerOnlineData = getPlayerOnlineData(pLayer);
         JsonElement time = playerOnlineData.get("time");
         if (time == null) {
@@ -75,7 +76,7 @@ public class MysqlBase implements DataService {
     }
 
     @Override
-    public void addPlayerOnlineTime(Player player, int time) {
+    public void addPlayerOnlineTime(OfflinePlayer player, int time) {
         Connection connection = null;
         PreparedStatement ps = null;
         try {
@@ -110,7 +111,7 @@ public class MysqlBase implements DataService {
     }
 
 
-    public JsonObject getPlayerOnlineData(Player player) {
+    public JsonObject getPlayerOnlineData(OfflinePlayer player) {
         Connection connection = null;
         PreparedStatement ps = null;
         ResultSet rs = null;
@@ -158,7 +159,7 @@ public class MysqlBase implements DataService {
     }
 
     @Override
-    public void insertPlayerOnlineTime(Player player, int time) {
+    public void insertPlayerOnlineTime(OfflinePlayer player, int time) {
         Connection connection = null;
         PreparedStatement ps = null;
         try {
@@ -201,7 +202,7 @@ public class MysqlBase implements DataService {
     }
 
     @Override
-    public List<String> getPlayerRewardArray(Player player) {
+    public List<String> getPlayerRewardArray(OfflinePlayer player) {
         JsonObject playerOnlineData = getPlayerOnlineData(player);
         JsonElement reward = playerOnlineData.get("reward");
         List<String> rewardList = new ArrayList<>();
@@ -262,7 +263,7 @@ public class MysqlBase implements DataService {
     }
 
     @Override
-    public int getPlayerOnlineTimeWeek(Player player) {
+    public int getPlayerOnlineTimeWeek(OfflinePlayer player) {
         String uuid = player.getUniqueId().toString();
         Connection connection = null;
         PreparedStatement ps = null;
@@ -322,7 +323,7 @@ public class MysqlBase implements DataService {
     }
 
     @Override
-    public int getPlayerOnlineTimeMonth(Player player) {
+    public int getPlayerOnlineTimeMonth(OfflinePlayer player) {
         String uuid = player.getUniqueId().toString();
         Connection connection = null;
         PreparedStatement ps = null;
@@ -382,7 +383,7 @@ public class MysqlBase implements DataService {
     }
 
     @Override
-    public int getPlayerOnlineTimeAll(Player player) {
+    public int getPlayerOnlineTimeAll(OfflinePlayer player) {
         String uuid = player.getUniqueId().toString();
         Connection connection = null;
         PreparedStatement ps = null;
