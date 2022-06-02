@@ -226,10 +226,24 @@ public class InventoryFactory {
         String versionString = Util.getVersionString();
         try {
             Class<?> itemClass = Class.forName("net.minecraft.server." + versionString + ".Item");
-            Method b = itemClass.getMethod("b", String.class);
-            Object invoke = b.invoke(itemClass, name);
+            Object invoke;
+            try {
+                Method b = itemClass.getMethod("b", String.class);
+                invoke = b.invoke(itemClass, name);
+            }catch (NoSuchMethodException noSuchMethodException) {
+                Class<?> iRegistry = Class.forName("net.minecraft.server." + versionString + ".IRegistry");
+                Class<?> minecraftKey = Class.forName("net.minecraft.server." + versionString + ".MinecraftKey");
+                Object itemRegistry = iRegistry.getField("ITEM").get(iRegistry);
+                Object key = minecraftKey.getConstructor(String.class).newInstance(name);
+                invoke = itemRegistry.getClass().getMethod("get", minecraftKey).invoke(itemRegistry, key);
+            }
             Class<?> itemStackClass = Class.forName("net.minecraft.server." + versionString + ".ItemStack");
-            Constructor<?> itemStackConstructor = itemStackClass.getDeclaredConstructor(itemClass);
+            Constructor<?> itemStackConstructor;
+            try {
+                itemStackConstructor = itemStackClass.getDeclaredConstructor(itemClass);
+            }catch (NoSuchMethodException e) {
+                itemStackConstructor = itemStackClass.getDeclaredConstructor(Class.forName("net.minecraft.server." + versionString + ".IMaterial"));
+            }
             Object nmsItemStack = itemStackConstructor.newInstance(invoke);
             Class<?> craftItemStack = Class.forName("org.bukkit.craftbukkit." + versionString + ".inventory.CraftItemStack");
             Method asBukkitCopy = craftItemStack.getMethod("asBukkitCopy", itemStackClass);
