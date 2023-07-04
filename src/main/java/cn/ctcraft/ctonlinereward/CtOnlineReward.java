@@ -30,10 +30,11 @@ import java.util.logging.Logger;
 public final class CtOnlineReward extends JavaPlugin {
     public static Economy economy = null;
     public static DataService dataService;
+    public static Placeholder placeholder;
     public static HikariCPBase hikariCPBase;
     public static YamlConfiguration lang;
     public static LanguageHandler languageHandler;
-    public static YamlConfiguration placeholder;
+    public static YamlConfiguration placeholderYaml;
 
 
     @Override
@@ -52,7 +53,7 @@ public final class CtOnlineReward extends JavaPlugin {
             @Override
             public void run() {
                 List<String> versionMsg = version.getVersionMsg();
-                versionMsg.forEach(System.out::println);
+                versionMsg.forEach(getLogger()::info);
             }
         }.runTaskAsynchronously(this);
 
@@ -73,7 +74,7 @@ public final class CtOnlineReward extends JavaPlugin {
 
 
         if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
-            Placeholder placeholder = new Placeholder();
+            placeholder = new Placeholder();
             placeholder.register();
         } else {
             getLogger().warning("§e§l未找到PlaceholderAPI.");
@@ -178,16 +179,15 @@ public final class CtOnlineReward extends JavaPlugin {
         if (!placeholderFile.exists()){
             saveResource("placeholder.yml",false);
         }
-        placeholder = new YamlConfiguration();
+        placeholderYaml = new YamlConfiguration();
         try {
-            placeholder.load(placeholderFile);
+            placeholderYaml.load(placeholderFile);
             logger.info("§a§l● papi配置文件加载成功!");
 
         } catch (Exception e) {
             logger.warning("§c§l■ papi变量配置文件加载失败!");
             e.printStackTrace();
         }
-
     }
 
     @Override

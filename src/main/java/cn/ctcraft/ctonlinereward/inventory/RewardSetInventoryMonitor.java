@@ -52,7 +52,7 @@ public class RewardSetInventoryMonitor implements Listener {
             String reward = ((RewardSetInventoryHolder) holder).getReward();
             RewardData rewardData = new RewardData(itemStacks);
 
-            boolean b = rewardService.saveRewardDate(rewardData, reward);
+            boolean b = rewardService.saveRewardData(rewardData, reward);
             if(b){
                 ((Player)e.getWhoClicked()).sendMessage("§a§l● "+reward+"奖励数据保存成功!");
             }

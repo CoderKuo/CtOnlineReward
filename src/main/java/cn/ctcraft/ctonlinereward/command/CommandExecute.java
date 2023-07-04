@@ -14,8 +14,8 @@ import java.io.File;
 import java.util.Map;
 
 public class CommandExecute {
-    private static CommandExecute instance = new CommandExecute();
-    private CtOnlineReward ctOnlineReward;
+    private static final CommandExecute instance = new CommandExecute();
+    private final CtOnlineReward ctOnlineReward;
     private CommandExecute(){
         ctOnlineReward = CtOnlineReward.getPlugin(CtOnlineReward.class);
     }
@@ -29,11 +29,7 @@ public class CommandExecute {
             sender.sendMessage("§c■ 权限不足!");
             return;
         }
-        if(args.length != 3){
-            sender.sendMessage("§c■ 缺少参数,正确格式为/cor reward set [奖励名称]");
-            return;
-        }
-        if(!args[1].equalsIgnoreCase("set")){
+        if (args.length != 3 || !args[1].equalsIgnoreCase("set")) {
             sender.sendMessage("§c■ 参数错误,正确格式为/cor reward set [奖励名称]");
             return;
         }
@@ -43,34 +39,48 @@ public class CommandExecute {
 
     }
 
-    public void openInventory(CommandSender sender,String[] args){
-        if(args.length == 1){
-            Inventory menu = InventoryFactory.build("menu.yml", (Player) sender);
-            ((Player) sender).openInventory(menu);
+    public void openInventory(CommandSender sender, String[] args) {
+        if (args.length == 1) {
+            if (sender instanceof Player) {
+                Inventory menu = InventoryFactory.build("menu.yml", (Player) sender);
+                ((Player) sender).openInventory(menu);
+            } else {
+                sender.sendMessage("§c■ 此命令仅适用于玩家!");
+            }
             return;
         }
-        if(args.length == 2){
+
+        if (args.length == 2) {
+            String menuId = args[1];
             Map<String, YamlConfiguration> guiYaml = YamlData.guiYaml;
-            if(!guiYaml.containsKey(args[1])){
+            if (!guiYaml.containsKey(menuId)) {
                 sender.sendMessage("§c■ 未找到指定菜单!");
                 return;
             }
+
+            boolean hasPermission = sender.hasPermission("CtOnlineReward.open." + menuId);
+            if (!hasPermission) {
+                sender.sendMessage("§c■ 权限不足!");
+                return;
+            }
+
             try {
-                boolean b = sender.hasPermission("CtOnlineReward.open." + args[1]);
-                if(!b){
-                    sender.sendMessage("§c■ 权限不足!");
-                    return;
+                if (sender instanceof Player) {
+                    Inventory build = InventoryFactory.build(menuId, (Player) sender);
+                    ((Player) sender).openInventory(build);
+                } else {
+                    sender.sendMessage("§c■ 此命令仅适用于玩家!");
                 }
-                Inventory build = InventoryFactory.build(args[1], (Player) sender);
-                ((Player) sender).openInventory(build);
-            }catch (Exception e){
-                ctOnlineReward.getLogger().warning("§c■ "+args[1]+"菜单配置异常!");
+            } catch (Exception e) {
+                ctOnlineReward.getLogger().warning("§c■ " + menuId + "菜单配置异常!");
                 e.printStackTrace();
             }
             return;
         }
+
         sender.sendMessage("§c■ 参数错误,正确格式为/cor open [菜单ID(可选)]");
     }
+
 
 
 

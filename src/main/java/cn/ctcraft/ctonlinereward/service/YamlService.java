@@ -10,14 +10,16 @@ import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.*;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Map;
 import java.util.Set;
 
 public class YamlService {
-    private static YamlService instance = new YamlService();
-    private CtOnlineReward ctOnlineReward;
+    private static final YamlService instance = new YamlService();
+    private final CtOnlineReward ctOnlineReward;
 
     private YamlService() {
         ctOnlineReward = CtOnlineReward.getPlugin(CtOnlineReward.class);
@@ -29,45 +31,39 @@ public class YamlService {
 
     public boolean loadGuiYaml() throws IOException, InvalidConfigurationException {
         Map<String, YamlConfiguration> guiYaml = YamlData.guiYaml;
-        File file = new File(ctOnlineReward.getDataFolder() + "/gui");
-        if (!file.exists()) {
-            boolean mkdir = file.mkdir();
-            if (mkdir) {
-                ctOnlineReward.saveResource("gui/menu.yml", false);
-                ctOnlineReward.saveResource("gui/extendMenu.yml", false);
-                ctOnlineReward.getLogger().info("§a§l● GUI文件夹构建成功!");
+        Path folderPath = Paths.get(ctOnlineReward.getDataFolder().getPath(), "gui");
+        if (!Files.exists(folderPath)) {
+            Files.createDirectories(folderPath);
+            saveResourceFile("gui/menu.yml");
+            saveResourceFile("gui/extendMenu.yml");
+            ctOnlineReward.getLogger().info("§a§l● GUI文件夹构建成功!");
+        }
+        try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(folderPath, "*.yml")) {
+            for (Path filePath : directoryStream) {
+                YamlConfiguration yamlConfiguration = new YamlConfiguration();
+                yamlConfiguration.load(filePath.toFile());
+                guiYaml.put(filePath.getFileName().toString(), yamlConfiguration);
             }
         }
-        File[] files = file.listFiles((File pathname) -> pathname.getName().contains(".yml"));
-        if (files == null) {
-            return false;
-        }
 
-        for (File file1 : files) {
-            YamlConfiguration yamlConfiguration = new YamlConfiguration();
-            yamlConfiguration.load(file1);
-            guiYaml.put(file1.getName(), yamlConfiguration);
-        }
-
-        boolean b = guiYaml.containsKey("menu.yml");
-        if (!b) {
+        boolean containsMenuYaml = guiYaml.containsKey("menu.yml");
+        if (!containsMenuYaml) {
             ctOnlineReward.getLogger().warning("§c§l■ 未找到menu.yml菜单文件,即将自动生成菜单文件!");
-            ctOnlineReward.saveResource("gui/menu.yml", false);
-            loadGuiYaml();
+            saveResourceFile("gui/menu.yml");
+            return loadGuiYaml();
         }
-
 
         return true;
     }
 
     public boolean loadRewardYaml() {
         YamlConfiguration rewardYaml = YamlData.rewardYaml;
-        File file = new File(ctOnlineReward.getDataFolder() + "/reward.yml");
-        if (!file.exists()) {
-            ctOnlineReward.saveResource("reward.yml", false);
+        Path filePath = Paths.get(ctOnlineReward.getDataFolder().getPath(), "reward.yml");
+        if (!Files.exists(filePath)) {
+            saveResourceFile("reward.yml");
         }
         try {
-            rewardYaml.load(file);
+            rewardYaml.load(filePath.toFile());
             loadRemindJson();
             return true;
         } catch (Exception e) {
@@ -81,21 +77,32 @@ public class YamlService {
         YamlConfiguration rewardYaml = YamlData.rewardYaml;
         YamlData.remindJson = new JsonArray();
         Set<String> keys = rewardYaml.getKeys(false);
-        for (String key : keys) {
-            ConfigurationSection configurationSection = rewardYaml.getConfigurationSection(key);
-            Set<String> keys1 = configurationSection.getKeys(false);
-            if (keys1.contains("remind")) {
-                JsonObject jsonObject = new JsonObject();
-                jsonObject.add("reward",new JsonPrimitive(key));
-                JsonElement jsonElement = new JsonPrimitive(configurationSection.getBoolean("remind", false));
-                jsonObject.add("remind", jsonElement);
-                if (keys1.contains("permission")) {
-                    JsonElement jsonElement1 = new JsonPrimitive(configurationSection.getString("permission"));
-                    jsonObject.add("permission", jsonElement1);
-                }
-                YamlData.remindJson.add(jsonObject);
-            }
-        }
+        keys.stream()
+                .filter(key -> rewardYaml.contains(key + ".remind"))
+                .forEach(key -> {
+                    ConfigurationSection configurationSection = rewardYaml.getConfigurationSection(key);
+                    boolean remind = configurationSection.getBoolean("remind", false);
+                    JsonObject jsonObject = new JsonObject();
+                    jsonObject.addProperty("reward", key);
+                    jsonObject.addProperty("remind", remind);
+                    if (configurationSection.contains("permission")) {
+                        String permission = configurationSection.getString("permission");
+                        jsonObject.addProperty("permission", permission);
+                    }
+                    YamlData.remindJson.add(jsonObject);
+                });
+
         return true;
+    }
+
+    private void saveResourceFile(String resourcePath) {
+        Path outputPath = Paths.get(ctOnlineReward.getDataFolder().getPath(), resourcePath);
+        try (InputStream inputStream = ctOnlineReward.getResource(resourcePath)) {
+            if (inputStream != null) {
+                Files.copy(inputStream, outputPath, StandardCopyOption.REPLACE_EXISTING);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

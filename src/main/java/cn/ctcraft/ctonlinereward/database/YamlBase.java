@@ -7,7 +7,6 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 
 import java.io.File;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.locks.Lock;
@@ -190,8 +189,7 @@ public class YamlBase implements DataService {
     public int getPlayerOnlineTimeAll(OfflinePlayer player) {
         int onlineTime = 0;
         File file = new File(ctOnlineReward.getDataFolder() + "/playerData");
-        FilterBySuffix filter = new FilterBySuffix(".yml");
-        File[] files = file.listFiles(filter);
+        File[] files = file.listFiles((dir, name) -> name.endsWith(".yml"));
         if (files == null){
             return 0;
         }
@@ -219,20 +217,6 @@ public class YamlBase implements DataService {
             }
         }
         return onlineTime;
-    }
-
-
-    public static class FilterBySuffix implements FilenameFilter {
-        private final String suffix;
-
-        public FilterBySuffix(String suffix) {
-            this.suffix = suffix;
-        }
-
-        @Override
-        public boolean accept(File dir, String name) {
-            return name.endsWith(suffix);
-        }
     }
 
 }

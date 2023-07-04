@@ -10,7 +10,7 @@ import org.bukkit.entity.Player;
 import java.util.List;
 
 public class CommandHandler implements CommandExecutor {
-    private static CommandHandler instance = new CommandHandler();
+    private static final CommandHandler instance = new CommandHandler();
     private CtOnlineReward ctOnlineReward = CtOnlineReward.getPlugin(CtOnlineReward.class);
     private CommandExecute commandExecute = CommandExecute.getInstance();
 
@@ -28,59 +28,65 @@ public class CommandHandler implements CommandExecutor {
         if (!label.equalsIgnoreCase("cor")) {
             return true;
         }
+
         if (args.length == 0) {
             if (sender instanceof Player) {
-                if (!sender.hasPermission("CtOnlineReward.cor")) {
+                Player player = (Player) sender;
+                if (!player.hasPermission("CtOnlineReward.cor")) {
                     sender.sendMessage("§c§l权限不足!");
                     return true;
                 }
-                commandExecute.openInventory(sender, new String[]{"1"});
-
+                commandExecute.openInventory(player, new String[]{"1"});
             } else {
                 sender.sendMessage(ctOnlineReward.getDescription().getName());
                 sender.sendMessage(ctOnlineReward.getDescription().getVersion());
-
+            }
+        } else {
+            String arg = args[0].toLowerCase();
+            switch (arg) {
+                case "reward":
+                    commandExecute.openRewardSetInventory(sender, args);
+                    break;
+                case "open":
+                    commandExecute.openInventory(sender, args);
+                    break;
+                case "reload":
+                    if (args.length == 1 && sender.hasPermission("CtOnlineReward.reload")) {
+                        reload();
+                        sender.sendMessage("§c§l重载成功!");
+                    }
+                    break;
+                case "remind":
+                    if (args.length == 2) {
+                        String state = args[1].toLowerCase();
+                        if (state.equals("on")) {
+                            toggleRemind((Player) sender, true);
+                            sender.sendMessage("§a§l成功打开提醒！");
+                        } else if (state.equals("off")) {
+                            toggleRemind((Player) sender, false);
+                            sender.sendMessage("§c§l成功关闭提醒!");
+                        }
+                    }
+                    break;
             }
         }
-        if (args.length > 0) {
-            if (args[0].equalsIgnoreCase("reward")) {
-                commandExecute.openRewardSetInventory(sender, args);
-                return true;
-            }
-            if (args[0].equalsIgnoreCase("open")) {
-                commandExecute.openInventory(sender, args);
-                return true;
-            }
-            if (args[0].equalsIgnoreCase("reload") && args.length == 1 && sender.hasPermission("CtOnlineReward.reload")) {
-                reload();
-                sender.sendMessage("§c§l重载成功!");
-                return true;
-            }
-            if (args[0].equalsIgnoreCase("remind") && args.length == 2) {
-                if (args[1].equalsIgnoreCase("on")) {
-                    List<Player> players = RemindTimer.players;
-                    if (players.contains((Player)sender)) {
-                        players.remove(sender);
-                    }
-                    sender.sendMessage("§a§l成功打开提醒！");
-                    return true;
-                }
-                if (args[1].equalsIgnoreCase("off")) {
-                    List<Player> players = RemindTimer.players;
-                    if (!players.contains((Player)sender)) {
-                        players.add((Player) sender);
-                    }
-                    sender.sendMessage("§c§l成功关闭提醒!");
-                    return true;
-                }
-            }
-        }
-
 
         return true;
     }
 
     private void reload() {
         ctOnlineReward.load();
+        CtOnlineReward.placeholder.loadPapiJson();
+    }
+
+    private void toggleRemind(Player player, boolean enable) {
+        List<Player> players = RemindTimer.players;
+        if (enable) {
+            players.remove(player);
+            player.sendMessage("§a§l成功打开提醒！");
+        } else {
+            players.add(player);
+            player.sendMessage("§c§l成功关闭提醒!");
+        }
     }
 }

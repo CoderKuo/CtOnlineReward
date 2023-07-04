@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class version {
-    public static List<String> getVersionMsg(){
+    public static List<String> getVersionMsg() {
         List<String> versionMsg = new ArrayList<>();
         String version = "获取失败！";
         try {
@@ -31,22 +31,40 @@ public class version {
             YamlConfiguration yamlConfiguration = new YamlConfiguration();
             yamlConfiguration.loadFromString(yamlText);
             version = yamlConfiguration.getString("CtOnlineReward.version");
-        }catch (UnknownHostException e){
-            version = "版本信息获取失败！" ;
+        } catch (Exception e) {
+            version = "版本信息获取失败！";
             versionMsg.add(version);
             return versionMsg;
-        } catch (Exception e){
-            e.printStackTrace();
         }
+
         CtOnlineReward plugin = CtOnlineReward.getPlugin(CtOnlineReward.class);
         versionMsg.add("§6===========[CtOnlineReward]============");
-        if(plugin.getDescription().getVersion().equalsIgnoreCase(version)){
-            versionMsg.add("欢迎您使用CtOnlineReward最新版本! 版本号:"+version);
-            versionMsg.add("§6=======================================");
-            return versionMsg;
+        if (isNewerVersion(plugin.getDescription().getVersion(), version)) {
+            versionMsg.add("CtOnlineReward不是最新版本! 最新版本: §b" + version + "§6!§f 你的版本: §b" + plugin.getDescription().getVersion());
+        } else {
+            versionMsg.add("欢迎您使用CtOnlineReward最新版本! 最新版本号:§b" +version+"§6!§f 您的版本号: §b" +plugin.getDescription().getVersion());
         }
-        versionMsg.add("CtOnlineReward不是最新版本!最新版本: §b"+version+"§6!你的版本: §b"+ plugin.getDescription().getVersion());
         versionMsg.add("§6=======================================");
         return versionMsg;
     }
+
+    private static boolean isNewerVersion(String currentVersion, String latestVersion) {
+        String[] currentParts = currentVersion.split("\\.");
+        String[] latestParts = latestVersion.split("\\.");
+
+        for (int i = 0; i < Math.max(currentParts.length, latestParts.length); i++) {
+            int currentPart = i < currentParts.length ? Integer.parseInt(currentParts[i]) : 0;
+            int latestPart = i < latestParts.length ? Integer.parseInt(latestParts[i]) : 0;
+
+            if (latestPart > currentPart) {
+                return true;
+            } else if (latestPart < currentPart) {
+                return false;
+            }
+        }
+
+        return false;
+    }
+
+
 }

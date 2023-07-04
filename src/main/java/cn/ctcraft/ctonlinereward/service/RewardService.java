@@ -29,21 +29,19 @@ public class RewardService {
 
     public List<ItemStack> getItemStackFromRewardId(String rewardId) {
         YamlConfiguration rewardYaml = YamlData.rewardYaml;
-        Set<String> rewardYamlKeys = rewardYaml.getKeys(false);
-        if(!rewardYamlKeys.contains(rewardId)){
+        if (!rewardYaml.contains(rewardId)) {
             return null;
         }
         ConfigurationSection rewardIdYaml = rewardYaml.getConfigurationSection(rewardId);
-        Set<String> rewardIdYamlKeys = rewardIdYaml.getKeys(false);
-        if(!rewardIdYamlKeys.contains("rewardData")){
+        if (!rewardIdYaml.contains("rewardData")) {
             return null;
         }
-        String rewardData = rewardIdYaml.getString("rewardData");
-        File file1 = new File(ctOnlineReward.getDataFolder() + "/rewardData/" + rewardData);
-        return getItemStackFromFile(file1);
+        String rewardDataPath = rewardIdYaml.getString("rewardData");
+        File rewardDataFile = new File(ctOnlineReward.getDataFolder(), "rewardData/" + rewardDataPath);
+        return getItemStackFromFile(rewardDataFile);
     }
 
-    public List<ItemStack> getItemStackFromFile(File file){
+    public List<ItemStack> getItemStackFromFile(File file) {
         Logger logger = ctOnlineReward.getLogger();
         try {
             FileInputStream fileInputStream = new FileInputStream(file);
@@ -51,17 +49,18 @@ public class RewardService {
             fileInputStream.read(bFile);
             SerializableUtil serializableUtil = new SerializableUtil();
             RewardData rewardData = serializableUtil.singleObjectFromByteArray(bFile, RewardData.class);
+            fileInputStream.close();
             return rewardData.getRewardList();
-        }catch (FileNotFoundException e){
+        } catch (FileNotFoundException e) {
             String message = e.getMessage();
-            boolean b = message.contains("系统找不到指定的文件");
-            if(b){
-                int i = message.indexOf("(系统找不到指定的文件。)");
-                String substring = message.substring(34, i);
-                ctOnlineReward.getLogger().warning("§c§l■ 找不到奖励数据!");
-                ctOnlineReward.getLogger().warning("§c§l■ 请使用/cor reward set "+substring+"设置奖励数据!");
+            if (message.contains("系统找不到指定的文件")) {
+                int startIndex = 34;
+                int endIndex = message.indexOf("(系统找不到指定的文件。)");
+                String rewardDataName = message.substring(startIndex, endIndex);
+                logger.warning("§c§l■ 找不到奖励数据!");
+                logger.warning("§c§l■ 请使用/cor reward set " + rewardDataName + "设置奖励数据!");
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             logger.warning("§c§l■ 奖励数据读取失败!");
         }
@@ -69,22 +68,22 @@ public class RewardService {
     }
 
 
-    public boolean saveRewardDate(RewardData rewardData, String reward) {
+    public boolean saveRewardData(RewardData rewardData, String reward) {
         Logger logger = ctOnlineReward.getLogger();
         try {
-            byte[] rewardDate = getRewardDate(rewardData);
-            File file = new File(ctOnlineReward.getDataFolder() + "/rewardData/" + reward);
+            byte[] rewardDataBytes = getRewardDataBytes(rewardData);
+            File file = new File(ctOnlineReward.getDataFolder(), "rewardData/" + reward);
             if (!file.exists()) {
                 boolean newFile = file.createNewFile();
                 if (newFile) {
-                    logger.info("§a§l● 奖励数据创建成功,奖励名为" + reward);
+                    logger.info("§a§l● 奖励数据创建成功，奖励名为" + reward);
                 } else {
-                    logger.warning("§c§l■ 奖励数据创建失败,奖励名为" + reward);
+                    logger.warning("§c§l■ 奖励数据创建失败，奖励名为" + reward);
                 }
             }
 
             FileOutputStream fileOutputStream = new FileOutputStream(file);
-            fileOutputStream.write(rewardDate);
+            fileOutputStream.write(rewardDataBytes);
             fileOutputStream.close();
             return true;
         } catch (Exception e) {
@@ -94,10 +93,10 @@ public class RewardService {
         return false;
     }
 
-    public byte[] getRewardDate(RewardData rewardData) throws IOException {
+    public byte[] getRewardDataBytes(RewardData rewardData) throws IOException {
         SerializableUtil serializableUtil = new SerializableUtil();
         return serializableUtil.singleObjectToByteArray(rewardData);
-
     }
+
 
 }

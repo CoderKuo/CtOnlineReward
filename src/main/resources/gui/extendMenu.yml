@@ -16,7 +16,7 @@ values:
     name: '&c&l头颅测试'
     type:
       name: 'skull'
-      skull: 'Bubblegum'
+      skull: 'e3RleHR1cmVzOntTS0lOOnt1cmw6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvY2NhY2RkNGM1MDRhZDAxNmZjYjFjZjcyYzY3OWRjMmJiMmQwZjkxNzMzMDcxYmQ2ODA5ZDJhY2U3YzI2YjUzMyJ9fX0='
     lore:
       - '&e&l头颅测试'
     index: 14

@@ -36,16 +36,10 @@ public class RemindTimer extends BukkitRunnable {
         players.clear();
         for (JsonElement jsonElement : remindJson) {
             JsonObject asJsonObject = jsonElement.getAsJsonObject();
-            if (asJsonObject.has("remind")) {
-                if (asJsonObject.get("remind").getAsBoolean()) {
-                    String reward = asJsonObject.get("reward").getAsString();
-                    if (asJsonObject.has("permission")) {
-                        sendMessage(asJsonObject.get("permission").getAsString(),reward);
-                    }else {
-                        sendMessage(reward);
-                    }
-                }
-
+            if (asJsonObject.has("remind") && asJsonObject.get("remind").getAsBoolean()) {
+                String reward = asJsonObject.get("reward").getAsString();
+                String permission = asJsonObject.has("permission") ? asJsonObject.get("permission").getAsString() : null;
+                sendMessage(permission, reward);
             }
         }
 
@@ -56,50 +50,35 @@ public class RemindTimer extends BukkitRunnable {
     }
 
     private void sendMessage(String permission, String rewardId) {
-        Collection<? extends Player> onlinePlayers = Bukkit.getOnlinePlayers();
-        for (Player onlinePlayer : onlinePlayers) {
-            //玩家没有权限则跳过
-            if (permission != null && !onlinePlayer.hasPermission(permission)){
-                continue;
-            }
-            //该轮已经提醒过了则跳过
-            if (players.contains(onlinePlayer)){
-                continue;
-            }
-            boolean b = hasNotReceivedReward(onlinePlayer, rewardId);
-            if (b) {
-                //把玩家添加到提醒过的玩家的列表
-                players.add(onlinePlayer);
-                FileConfiguration config = ctOnlineReward.getConfig();
-                String message = config.getString("Setting.remind.message");
-                JsonElement parse = new JsonParser().parse(message);
-                boolean jsonObject = parse.isJsonNull();
-                if (!jsonObject) {
-                    BaseComponent[] parse1 = ComponentSerializer.parse(message);
-                    for (BaseComponent baseComponent : parse1) {
-                        onlinePlayer.spigot().sendMessage(baseComponent);
+        Bukkit.getOnlinePlayers().parallelStream()
+                .filter(onlinePlayer -> permission == null || onlinePlayer.hasPermission(permission))
+                .filter(onlinePlayer -> !players.contains(onlinePlayer))
+                .filter(onlinePlayer -> hasNotReceivedReward(onlinePlayer, rewardId))
+                .forEach(onlinePlayer -> {
+                    players.add(onlinePlayer);
+                    FileConfiguration config = ctOnlineReward.getConfig();
+                    String message = config.getString("Setting.remind.message");
+                    if (message != null) {
+                        if (message.startsWith("[")) {
+                            BaseComponent[] parse = ComponentSerializer.parse(message);
+                            onlinePlayer.spigot().sendMessage(parse);
+                        } else {
+                            onlinePlayer.sendMessage(message.replace("&", "§"));
+                        }
                     }
-                }else{
-                    onlinePlayer.sendMessage(message.replace("&","§"));
-                }
-            }
-        }
+                });
     }
 
     private boolean hasNotReceivedReward(Player player, String rewardId) {
         YamlConfiguration rewardYaml = YamlData.rewardYaml;
         ConfigurationSection configurationSection = rewardYaml.getConfigurationSection(rewardId);
-        Set<String> keys = configurationSection.getKeys(false);
-        if (!keys.contains("time")){
+        if (configurationSection == null || !configurationSection.contains("time")) {
             return false;
         }
         boolean timeIsOk = RewardOnlineTimeHandler.getInstance().onlineTimeIsOk(player, configurationSection.getString("time"));
-        if (timeIsOk){
+        if (timeIsOk) {
             List<String> playerRewardArray = CtOnlineReward.dataService.getPlayerRewardArray(player);
-            if(playerRewardArray.size() == 0){
-                return true;
-            }
-            return !playerRewardArray.contains(rewardId);
+            return playerRewardArray.isEmpty() || !playerRewardArray.contains(rewardId);
         }
         return false;
     }

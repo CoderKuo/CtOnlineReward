@@ -14,7 +14,7 @@ public class HikariCPBase {
         HikariConfig hikariConfig = new HikariConfig();
         CtOnlineReward plugin = CtOnlineReward.getPlugin(CtOnlineReward.class);
         FileConfiguration config = plugin.getConfig();
-        String type = config.getString("database.type");
+        String type = config.getString("database.type","");
         ConfigurationSection databaseConfig = config.getConfigurationSection("database");
         if (type.equalsIgnoreCase("mysql")) {
             hikariConfig.setDriverClassName("com.mysql.jdbc.Driver");

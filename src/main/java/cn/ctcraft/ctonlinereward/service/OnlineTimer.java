@@ -85,6 +85,10 @@ public class OnlineTimer extends BukkitRunnable {
                     e.printStackTrace();
                 }
             }
+            boolean weekRankEnable = ctOnlineReward.getConfig().getBoolean("Setting.weekRankEnable");
+            if (weekRankEnable){
+                WeekOnlineRankService.refreshList();
+            }
         }
     }
 }

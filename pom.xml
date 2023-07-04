@@ -6,7 +6,7 @@
 
     <groupId>cn.ctcraft</groupId>
     <artifactId>CtOnlineReward</artifactId>
-    <version>0.1.9</version>
+    <version>0.2.4</version>
     <packaging>jar</packaging>
 
     <name>CtOnlineReward</name>
@@ -90,8 +90,9 @@
         <dependency>
             <groupId>me.clip</groupId>
             <artifactId>placeholderapi</artifactId>
-            <version>2.10.9</version>
-            <scope>provided</scope>
+            <version>2.11.2</version>
+            <scope>system</scope>
+            <systemPath>${basedir}/PlaceholderAPI-2.11.2.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>PlayerPoints</groupId>
@@ -107,11 +108,11 @@
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>SkullAPI</groupId>
-            <artifactId>SkullAPI</artifactId>
+            <groupId>mojang_1.12.2.jar</groupId>
+            <artifactId>mojang_1.12.2.jar</artifactId>
             <version>1.0</version>
             <scope>system</scope>
-            <systemPath>${basedir}/SkullAPI.jar</systemPath>
+            <systemPath>${basedir}/mojang_1.12.2.jar</systemPath>
         </dependency>
     </dependencies>
 </project>

@@ -10,62 +10,68 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import java.io.File;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class RewardSetInventory {
-    private CtOnlineReward ctOnlineReward;
+    private final CtOnlineReward ctOnlineReward;
 
-    public RewardSetInventory(){
+    public RewardSetInventory() {
         ctOnlineReward = CtOnlineReward.getPlugin(CtOnlineReward.class);
     }
 
+    public void openInventory(Player player, String reward) {
+        Inventory inventory = createInventory(reward);
+        player.openInventory(inventory);
+    }
 
-
-    public void openInventory(Player player,String reward){
-
+    private Inventory createInventory(String reward) {
         RewardSetInventoryHolder holder = new RewardSetInventoryHolder(reward);
         Inventory inventory = Bukkit.createInventory(holder, 45, "§7§l奖励设置[" + reward + "]");
         Map<Integer, ItemStack> frameItemStackMap = getFrameItemStackMap();
-        Set<Integer> integers = frameItemStackMap.keySet();
-        for (Integer integer : integers) {
-            inventory.setItem(integer,frameItemStackMap.get(integer));
-        }
+        frameItemStackMap.forEach(inventory::setItem);
 
         File file = new File(ctOnlineReward.getDataFolder() + "/rewardData/" + reward);
-        if(file.exists()){
+        if (file.exists()) {
             RewardService instance = RewardService.getInstance();
             List<ItemStack> itemStackFromFile = instance.getItemStackFromFile(file);
-            if(itemStackFromFile != null){
-                for (ItemStack itemStack : itemStackFromFile) {
-                    inventory.setItem(inventory.firstEmpty(),itemStack);
-                }
+            if (itemStackFromFile != null) {
+                itemStackFromFile.stream()
+                        .filter(Objects::nonNull)
+                        .forEach(inventory::addItem);
             }
         }
 
-        player.openInventory(inventory);
-
+        return inventory;
     }
 
-    private Map<Integer, ItemStack> getFrameItemStackMap(){
-        Map<Integer,ItemStack> map = new HashMap<>();
-        ItemStack itemStack = new ItemStack(Material.STONE);
-        ItemMeta itemMeta = itemStack.hasItemMeta() ? itemStack.getItemMeta() : Bukkit.getItemFactory().getItemMeta(itemStack.getType());
-        itemMeta.setDisplayName("-");
-        itemStack.setItemMeta(itemMeta);
+    private Map<Integer, ItemStack> getFrameItemStackMap() {
+        Map<Integer, ItemStack> map = new HashMap<>();
+        ItemStack frameItemStack = createFrameItemStack();
         for (int i = 36; i < 45; i++) {
-            if(i == 40){
-                continue;
+            if (i != 40) {
+                map.put(i, frameItemStack);
             }
-            map.put(i,itemStack);
         }
-        ItemStack saveItem = new ItemStack(Material.REDSTONE);
-        ItemMeta saveItemMeta = saveItem.hasItemMeta() ? saveItem.getItemMeta() : Bukkit.getItemFactory().getItemMeta(saveItem.getType());
-        saveItemMeta.setDisplayName("§c§l▲保存配置");
-        saveItem.setItemMeta(saveItemMeta);
-        map.put(40,saveItem);
+
+        ItemStack saveItemStack = createSaveItemStack();
+        map.put(40, saveItemStack);
+
         return map;
+    }
+
+    private ItemStack createFrameItemStack() {
+        ItemStack frameItemStack = new ItemStack(Material.STONE);
+        ItemMeta frameItemMeta = frameItemStack.getItemMeta();
+        frameItemMeta.setDisplayName("-");
+        frameItemStack.setItemMeta(frameItemMeta);
+        return frameItemStack;
+    }
+
+    private ItemStack createSaveItemStack() {
+        ItemStack saveItemStack = new ItemStack(Material.REDSTONE);
+        ItemMeta saveItemMeta = saveItemStack.getItemMeta();
+        saveItemMeta.setDisplayName("§c§l▲保存配置");
+        saveItemStack.setItemMeta(saveItemMeta);
+        return saveItemStack;
     }
 }

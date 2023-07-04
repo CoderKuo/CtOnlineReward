@@ -28,6 +28,7 @@ import org.bukkit.inventory.PlayerInventory;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 
@@ -39,40 +40,39 @@ public class InventoryMonitor implements Listener {
     @EventHandler
     public void InventoryClick(InventoryClickEvent e) {
         Inventory inventory = e.getInventory();
-        if (inventory == null) {
+        if (inventory == null || e.getRawSlot() < 0 || e.getClickedInventory() == null) {
             return;
         }
+        e.getCursor();
         holder = inventory.getHolder();
         if (!(holder instanceof MainInventoryHolder)) {
             return;
         }
-        int rawSlot = e.getRawSlot();
-        if (e.getRawSlot() < 0 || e.getInventory() == null) {
-            return;
-        }
-        if (e.getClick().isShiftClick()) {
-            e.setCancelled(true);
-        }
-        if (e.getClickedInventory().getHolder() instanceof MainInventoryHolder) {
+
+        if (e.getClick().isShiftClick() || e.getClickedInventory().getHolder() instanceof MainInventoryHolder) {
             e.setCancelled(true);
         }
 
+        int rawSlot = e.getRawSlot();
         MainInventoryHolder mainInventoryHolder = (MainInventoryHolder) holder;
         Map<Integer, RewardEntity> statusMap = mainInventoryHolder.statusMap;
         Player player = (Player) e.getWhoClicked();
+
         if (statusMap.containsKey(rawSlot)) {
             rewardExecute(statusMap.get(rawSlot), player);
         }
+
         Map<Integer, ConfigurationSection> commandMap = mainInventoryHolder.commandMap;
         if (commandMap.containsKey(rawSlot)) {
             commandExecute(commandMap.get(rawSlot), player);
         }
+
         Map<Integer, String> guiMap = mainInventoryHolder.guiMap;
         if (guiMap.containsKey(rawSlot)) {
             guiExecute(guiMap.get(rawSlot), player);
         }
-
     }
+
 
     private void guiExecute(String gui, Player player) {
         Inventory build = InventoryFactory.build(gui, player);
@@ -81,124 +81,119 @@ public class InventoryMonitor implements Listener {
 
     private void commandExecute(ConfigurationSection command, Player player) {
         Set<String> keys = command.getKeys(false);
-        if (keys.contains("PlayerCommands")) {
-            List<String> playerCommands = command.getStringList("PlayerCommands");
+
+        List<String> playerCommands = keys.contains("PlayerCommands") ? command.getStringList("PlayerCommands") : null;
+        List<String> opCommands = keys.contains("OpCommands") ? command.getStringList("OpCommands") : null;
+        List<String> consoleCommands = keys.contains("ConsoleCommands") ? command.getStringList("ConsoleCommands") : null;
+
+        if (playerCommands != null) {
             List<String> list = PlaceholderAPI.setPlaceholders(player, playerCommands);
             for (String s : list) {
                 player.performCommand(s);
             }
         }
-        if (keys.contains("OpCommands")) {
-            List<String> opCommands = command.getStringList("OpCommands");
-            List<String> list1 = PlaceholderAPI.setPlaceholders(player, opCommands);
-            boolean isOp = player.isOp();
-            try {
-                player.setOp(true);
+
+        boolean isOp = player.isOp();
+        try {
+            player.setOp(true);
+            if (opCommands != null) {
+                List<String> list1 = PlaceholderAPI.setPlaceholders(player, opCommands);
                 for (String c : list1) {
                     player.performCommand(c);
                 }
-            } finally {
-                player.setOp(isOp);
             }
+        } finally {
+            player.setOp(isOp);
         }
-        if (keys.contains("ConsoleCommands")) {
-            List<String> consoleCommands = command.getStringList("ConsoleCommands");
+
+        if (consoleCommands != null) {
             List<String> list2 = PlaceholderAPI.setPlaceholders(player, consoleCommands);
             for (String s : list2) {
                 Bukkit.dispatchCommand(Bukkit.getConsoleSender(), s);
             }
         }
-
     }
 
     private void rewardExecute(RewardEntity rewardEntity, Player player) {
-        if (rewardEntity.getStatus() == RewardStatus.activation) {
-            List<String> playerRewardArray = CtOnlineReward.dataService.getPlayerRewardArray(player);
-            if (playerRewardArray.contains(rewardEntity.getRewardID())) {
-                if (holder != null) {
-                    if (holder instanceof MainInventoryHolder) {
-                        Inventory build = InventoryFactory.build(((MainInventoryHolder) holder).inventoryID, player);
-                        player.openInventory(build);
+        if (rewardEntity.getStatus() != RewardStatus.activation) {
+            return;
+        }
+
+        List<String> playerRewardArray = CtOnlineReward.dataService.getPlayerRewardArray(player);
+        if (playerRewardArray.contains(rewardEntity.getRewardID())) {
+            if (holder instanceof MainInventoryHolder) {
+                Inventory build = InventoryFactory.build(((MainInventoryHolder) holder).inventoryID, player);
+                player.openInventory(build);
+            }
+            return;
+        }
+
+        try {
+            if (permissionHandler(rewardEntity.getRewardID(), player)) {
+                List<ItemStack> itemStackFromRewardId = rewardService.getItemStackFromRewardId(rewardEntity.getRewardID());
+
+                DataService playerDataService = CtOnlineReward.dataService;
+                if (playerDataService.addRewardToPlayData(rewardEntity.getRewardID(), player)) {
+                    Sound sound = getSound(rewardEntity.getRewardID());
+                    if (sound != null) {
+                        player.playSound(player.getLocation(), sound, 1F, 1F);
                     }
-                }
-                return;
-            }
-            try {
-                // check the permission of player
-                if (permissionHandler(rewardEntity.getRewardID(), player)) {
-                    List<ItemStack> itemStackFromRewardId = rewardService.getItemStackFromRewardId(rewardEntity.getRewardID());
 
-                        DataService playerDataService = CtOnlineReward.dataService;
-                        boolean b1 = playerDataService.addRewardToPlayData(rewardEntity.getRewardID(), player);
-                        if (b1) {
-                            Sound sound = getSound(rewardEntity.getRewardID());
-                            if (sound != null) {
-                                player.playSound(player.getLocation(), sound, 1F, 1F);
-                            }
-
-                            if (itemStackFromRewardId != null) {
-                                if (!isPlayerInventorySizeEnough(itemStackFromRewardId, player)) {
-                                    player.sendMessage(CtOnlineReward.languageHandler.getLang("reward.volume").replace("{rewardSize}", String.valueOf(itemStackFromRewardId.size())));
-                                    player.sendMessage(CtOnlineReward.languageHandler.getLang("reward.volume2"));
-                                }else {
-                                    givePlayerItem(itemStackFromRewardId, player);
-                                }
-                            }
-                            executeCommand(rewardEntity.getRewardID(), player);
-                            giveMoney(player, rewardEntity.getRewardID());
-                            action(rewardEntity.getRewardID(), player);
+                    if (itemStackFromRewardId != null) {
+                        if (!isPlayerInventorySizeEnough(itemStackFromRewardId, player)) {
+                            player.sendMessage(CtOnlineReward.languageHandler.getLang("reward.volume").replace("{rewardSize}", String.valueOf(itemStackFromRewardId.size())));
+                            player.sendMessage(CtOnlineReward.languageHandler.getLang("reward.volume2"));
+                        } else {
+                            givePlayerItem(itemStackFromRewardId, player);
                         }
+                    }
 
-                } else {
-                    String lang = CtOnlineReward.languageHandler.getLang("reward.volume3");
-                    player.sendMessage(lang);
+                    executeCommand(rewardEntity.getRewardID(), player);
+                    giveMoney(player, rewardEntity.getRewardID());
+                    action(rewardEntity.getRewardID(), player);
                 }
-
-            } catch (Exception ex) {
-                ctOnlineReward.getLogger().warning("§c§l■ 奖励配置异常!");
-                ex.printStackTrace();
+            } else {
+                String lang = CtOnlineReward.languageHandler.getLang("reward.volume3");
+                player.sendMessage(lang);
             }
+        } catch (Exception ex) {
+            ctOnlineReward.getLogger().warning("§c§l■ 奖励配置异常!");
+            ex.printStackTrace();
         }
     }
+
 
     private boolean permissionHandler(String rewardId, Player player) {
         YamlConfiguration rewardYaml = YamlData.rewardYaml;
-        Set<String> rewardYamlKeys = rewardYaml.getKeys(false);
-        if (!rewardYamlKeys.contains(rewardId)) {
+        if (!rewardYaml.contains(rewardId)) {
             return true;
         }
         ConfigurationSection configurationSection = rewardYaml.getConfigurationSection(rewardId);
-        Set<String> keys = configurationSection.getKeys(false);
-        if (!keys.contains("permission")) {
-            return true;
-        }
         String permission = configurationSection.getString("permission");
-        return player.hasPermission(permission);
-
+        return permission == null || player.hasPermission(permission);
     }
+
 
     private void action(String rewardID, Player player) {
         YamlConfiguration rewardYaml = YamlData.rewardYaml;
-        Set<String> rewardYamlKeys = rewardYaml.getKeys(false);
-        if (!rewardYamlKeys.contains(rewardID)) {
+        if (!rewardYaml.contains(rewardID)) {
             return;
         }
         ConfigurationSection configurationSection = rewardYaml.getConfigurationSection(rewardID);
-        Set<String> keys = configurationSection.getKeys(false);
-        if (!keys.contains("receiveAction")) {
+        if (!configurationSection.contains("receiveAction")) {
             return;
         }
         List<String> receiveAction = configurationSection.getStringList("receiveAction");
-        for (String action : receiveAction) {
-            actionHandler(action, player, configurationSection);
-        }
+        receiveAction.forEach(action -> actionHandler(action, player, configurationSection));
     }
+
 
     private void actionHandler(String actionContent, Player player, ConfigurationSection configurationSection) {
         ActionType actionType = ActionType.getActionType(actionContent);
         if (actionType == null) {
             return;
         }
+
         switch (actionType) {
             case sound:
                 String soundText = actionContent.replace("[sound]", "").replace(" ", "");
@@ -221,24 +216,16 @@ public class InventoryMonitor implements Listener {
                 Inventory build = InventoryFactory.build(guiText, player);
                 player.openInventory(build);
                 break;
-            default:
-                break;
         }
     }
 
 
     private Sound getSound(String rewardID) {
         YamlConfiguration rewardYaml = YamlData.rewardYaml;
-        Set<String> rewardYamlKeys = rewardYaml.getKeys(false);
-        if (!rewardYamlKeys.contains(rewardID)) {
+        if (!rewardYaml.contains(rewardID + ".sound")) {
             return null;
         }
-        ConfigurationSection rewardIdYaml = rewardYaml.getConfigurationSection(rewardID);
-        Set<String> rewardIdYamlKeys = rewardIdYaml.getKeys(false);
-        if (!rewardIdYamlKeys.contains("sound")) {
-            return null;
-        }
-        String sound = rewardIdYaml.getString("sound");
+        String sound = rewardYaml.getString(rewardID + ".sound");
         try {
             return Sound.valueOf(sound);
         } catch (IllegalArgumentException e) {
@@ -248,27 +235,20 @@ public class InventoryMonitor implements Listener {
 
     private void giveMoney(Player player, String rewardID) {
         YamlConfiguration rewardYaml = YamlData.rewardYaml;
-        Set<String> rewardYamlKeys = rewardYaml.getKeys(false);
-        if (!rewardYamlKeys.contains(rewardID)) {
+        if (!rewardYaml.contains(rewardID + ".economy")) {
             return;
         }
-        ConfigurationSection rewardIdYaml = rewardYaml.getConfigurationSection(rewardID);
-        Set<String> rewardIdYamlKeys = rewardIdYaml.getKeys(false);
-        if (!rewardIdYamlKeys.contains("economy")) {
-            return;
-        }
-        ConfigurationSection economy = rewardIdYaml.getConfigurationSection("economy");
-        Set<String> keys = economy.getKeys(false);
-        if (keys.contains("money")) {
+        ConfigurationSection economy = rewardYaml.getConfigurationSection(rewardID + ".economy");
+        if (economy.contains("money")) {
             double money = economy.getDouble("money");
             CtOnlineReward.economy.depositPlayer(player, money);
         }
-        if (keys.contains("points")) {
+        if (economy.contains("points")) {
             int points = economy.getInt("points");
             try {
                 PlayerPointsAPI playerPointsAPI = new PlayerPointsAPI(ctOnlineReward.getPlayerPoints());
                 playerPointsAPI.give(player.getUniqueId(), points);
-            }catch (NoClassDefFoundError e){
+            } catch (NoClassDefFoundError e) {
                 ctOnlineReward.getLogger().warning("§c§l■ 未找到点券插件,请勿在配置文件(reward.yml)中配置点券项，如果需要使用点券请安装PlayerPoints");
             }
         }
@@ -276,16 +256,10 @@ public class InventoryMonitor implements Listener {
 
     private void executeCommand(String rewardID, Player player) {
         YamlConfiguration rewardYaml = YamlData.rewardYaml;
-        Set<String> rewardYamlKeys = rewardYaml.getKeys(false);
-        if (!rewardYamlKeys.contains(rewardID)) {
+        if (!rewardYaml.contains(rewardID + ".command")) {
             return;
         }
-        ConfigurationSection rewardIdYaml = rewardYaml.getConfigurationSection(rewardID);
-        Set<String> rewardIdYamlKeys = rewardIdYaml.getKeys(false);
-        if (!rewardIdYamlKeys.contains("command")) {
-            return;
-        }
-        ConfigurationSection command = rewardIdYaml.getConfigurationSection("command");
+        ConfigurationSection command = rewardYaml.getConfigurationSection(rewardID + ".command");
         List<String> playerCommands = command.getStringList("PlayerCommands");
         List<String> list = PlaceholderAPI.setPlaceholders(player, playerCommands);
         for (String s : list) {
@@ -308,7 +282,6 @@ public class InventoryMonitor implements Listener {
         for (String s : list2) {
             Bukkit.dispatchCommand(Bukkit.getConsoleSender(), s);
         }
-
     }
 
     private boolean givePlayerItem(List<ItemStack> list, Player player) {
@@ -317,35 +290,28 @@ public class InventoryMonitor implements Listener {
         }
 
         PlayerInventory inventory = player.getInventory();
-        for (ItemStack itemStack : list) {
+        list.forEach(itemStack -> {
             if (itemStack != null) {
                 inventory.addItem(itemStack);
             }
-        }
+        });
 
         return true;
     }
 
+
     private boolean isPlayerInventorySizeEnough(List<ItemStack> itemStacks, Player player) {
         PlayerInventory inventory = player.getInventory();
         int emptySize = 0;
-        for (int i = 0; i < 36; i++) {
-            ItemStack item = inventory.getItem(i);
+        for (ItemStack item : inventory.getContents()) {
             if (item == null) {
                 emptySize++;
             }
         }
 
-        for (int i = 0; i < itemStacks.size(); i++) {
-            if (itemStacks.get(i) == null) {
-                itemStacks.remove(i);
-            }
-        }
+        itemStacks.removeIf(Objects::isNull);
 
-        if (itemStacks.size() > emptySize) {
-            return false;
-        } else {
-            return true;
-        }
+        return itemStacks.size() <= emptySize;
     }
+
 }

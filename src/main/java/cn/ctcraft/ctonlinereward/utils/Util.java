@@ -63,7 +63,7 @@ public class Util {
     }
 
     public static int timestampToHours(long timestamp){
-        SimpleDateFormat hh = new SimpleDateFormat("hh");
+        SimpleDateFormat hh = new SimpleDateFormat("HH");
         return Integer.parseInt(hh.format(timestamp));
     }
 }

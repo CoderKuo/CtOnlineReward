@@ -1,6 +1,7 @@
 package cn.ctcraft.ctonlinereward;
 
 import cn.ctcraft.ctonlinereward.database.DataService;
+import cn.ctcraft.ctonlinereward.service.WeekOnlineRankService;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
@@ -11,7 +12,7 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
-import org.jetbrains.annotations.NotNull;
+import org.bukkit.scheduler.BukkitRunnable;
 
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
@@ -27,7 +28,12 @@ public class Placeholder extends PlaceholderExpansion {
     private JsonObject papijson = new JsonObject();
 
     public Placeholder() {
-        YamlConfiguration placeholderYaml = CtOnlineReward.placeholder;
+        loadPapiJson();
+    }
+
+    public void loadPapiJson(){
+        papijson = new JsonObject();
+        YamlConfiguration placeholderYaml = CtOnlineReward.placeholderYaml;
         Set<String> keys = placeholderYaml.getKeys(false);
         for (String key : keys) {
             ConfigurationSection configurationSection = placeholderYaml.getConfigurationSection(key);
@@ -52,16 +58,21 @@ public class Placeholder extends PlaceholderExpansion {
 
 
     @Override
-    public String onRequest(OfflinePlayer player, @NotNull String params) {
+    public String onRequest(OfflinePlayer player, String params) {
         if (player == null) {
             return "";
         }
 
+        if (params.equals("player")) {
+            return player.getName();
+        }
+
+        if (params.equals("world")) {
+            return player.isOnline() ? ((Player) player).getWorld().getName() : "玩家不在线";
+        }
+
+
         switch (params) {
-            case "player":
-                return player.getName();
-            case "world":
-                return player.isOnline() ? ((Player)player).getWorld().getName() : "玩家不在线";
             case "onlinetime":
                 return String.valueOf(playerDataService.getPlayerOnlineTime(player));
             case "weekonlinetime":
@@ -72,11 +83,11 @@ public class Placeholder extends PlaceholderExpansion {
                 return String.valueOf(playerDataService.getPlayerOnlineTimeAll(player));
         }
 
-        boolean has = papijson.has(params);
-        if (has) {
-            JsonElement jsonElement = papijson.get(params);
+        JsonElement jsonElement = papijson.get(params);
+        if (jsonElement != null && jsonElement.isJsonObject()) {
             JsonObject asJsonObject = jsonElement.getAsJsonObject();
-            String type = asJsonObject.get("type").getAsString();boolean hasFormula = asJsonObject.has("formula");
+            String type = asJsonObject.get("type").getAsString();
+            boolean hasFormula = asJsonObject.has("formula");
             if (hasFormula) {
                 ScriptEngine javaScript = new ScriptEngineManager().getEngineByName("JavaScript");
                 String formula = asJsonObject.get("formula").getAsString();
@@ -98,13 +109,14 @@ public class Placeholder extends PlaceholderExpansion {
                         throw new IllegalStateException("Unexpected value: " + type);
                 }
                 try {
-                    if (javaScript == null){
+                    Object eval;
+                    if (javaScript != null) {
+                        eval = javaScript.eval(newFormula);
+                    } else {
                         Expression expression = new Expression(newFormula);
-                        BigDecimal eval = expression.eval();
-                        return String.format("%.2f",eval);
+                        eval = expression.eval();
                     }
-                    Object eval = javaScript.eval(newFormula);
-                    if (eval instanceof Double){
+                    if (eval instanceof Double) {
                         return String.format("%.2f", eval);
                     }
                     return String.valueOf(eval);
@@ -126,102 +138,29 @@ public class Placeholder extends PlaceholderExpansion {
             }
         }
 
+        String[] s = params.split("_");
+        if (s[0].equalsIgnoreCase("week")) {
+            JsonObject rankPlayer = WeekOnlineRankService.getRankPlayer(Integer.parseInt(s[1]));
+            JsonElement name = rankPlayer.get("name");
+            JsonElement time = rankPlayer.get("time");
+            return name.getAsString() + " - " + time.getAsString();
+        }
 
         return null;
     }
 
     @Override
-    public String onPlaceholderRequest(Player player, @NotNull String params) {
-        if (player == null) {
-            return "";
-        }
-
-
-        switch (params) {
-            case "player":
-                return player.getName();
-            case "world":
-                return player.getWorld().getName();
-            case "onlineTime":
-                return String.valueOf(playerDataService.getPlayerOnlineTime(player));
-            case "weekOnlineTime":
-                return String.valueOf(playerDataService.getPlayerOnlineTimeWeek(player));
-            case "monthOnlineTime":
-                return String.valueOf(playerDataService.getPlayerOnlineTimeMonth(player));
-            case "allOnlineTime":
-                return String.valueOf(playerDataService.getPlayerOnlineTimeAll(player));
-        }
-
-        boolean has = papijson.has(params);
-        if (has) {
-            JsonElement jsonElement = papijson.get(params);
-            JsonObject asJsonObject = jsonElement.getAsJsonObject();
-            String type = asJsonObject.get("type").getAsString();boolean hasFormula = asJsonObject.has("formula");
-            if (hasFormula) {
-                ScriptEngine javaScript = new ScriptEngineManager().getEngineByName("JavaScript");
-                String formula = asJsonObject.get("formula").getAsString();
-                String newFormula;
-                switch (type) {
-                    case "all":
-                        newFormula = formula.replace("x", String.valueOf(playerDataService.getPlayerOnlineTimeAll(player)));
-                        break;
-                    case "week":
-                        newFormula = formula.replace("x", String.valueOf(playerDataService.getPlayerOnlineTimeWeek(player)));
-                        break;
-                    case "month":
-                        newFormula = formula.replace("x", String.valueOf(playerDataService.getPlayerOnlineTimeMonth(player)));
-                        break;
-                    case "day":
-                        newFormula = formula.replace("x", String.valueOf(playerDataService.getPlayerOnlineTime(player)));
-                        break;
-                    default:
-                        throw new IllegalStateException("Unexpected value: " + type);
-                }
-                try {
-                    if (javaScript == null){
-                        Expression expression = new Expression(newFormula);
-                        BigDecimal eval = expression.eval();
-                        return String.format("%.2f",eval);
-                    }
-                    Object eval = javaScript.eval(newFormula);
-                    if (eval instanceof Double){
-                        return String.format("%.2f", eval);
-                    }
-                    return String.valueOf(eval);
-                } catch (ScriptException e) {
-                    ctOnlineReward.getLogger().warning("§c§l■ papi变量公式错误,请检查公式格式是否正确!");
-                    e.printStackTrace();
-                }
-            } else {
-                switch (type) {
-                    case "all":
-                        return String.valueOf(playerDataService.getPlayerOnlineTimeAll(player));
-                    case "week":
-                        return String.valueOf(playerDataService.getPlayerOnlineTimeWeek(player));
-                    case "month":
-                        return String.valueOf(playerDataService.getPlayerOnlineTimeMonth(player));
-                    case "day":
-                        return String.valueOf(playerDataService.getPlayerOnlineTime(player));
-                }
-            }
-        }
-
-
-        return null;
-    }
-
-    @Override
-    public @NotNull String getIdentifier() {
+    public String getIdentifier() {
         return "CtOnlineReward";
     }
 
     @Override
-    public @NotNull String getAuthor() {
+    public String getAuthor() {
         return "大阔";
     }
 
     @Override
-    public @NotNull String getVersion() {
+    public String getVersion() {
         return ctOnlineReward.getDescription().getVersion();
     }
 }

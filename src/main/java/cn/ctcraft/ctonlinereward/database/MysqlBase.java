@@ -7,6 +7,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.zaxxer.hikari.HikariDataSource;
+import org.apache.commons.lang.StringUtils;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
@@ -14,6 +15,7 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.UUID;
 
 public class MysqlBase implements DataService {
     private CtOnlineReward ctOnlineReward = CtOnlineReward.getPlugin(CtOnlineReward.class);
@@ -28,175 +30,100 @@ public class MysqlBase implements DataService {
 
 
     public void createTable() {
-        Connection connection = null;
-        PreparedStatement ps = null;
-        try {
-            connection = getConnection();
+        try (Connection connection = getConnection();
+             Statement statement = connection.createStatement()) {
             String date = Util.getDate();
             String sql = "CREATE TABLE IF NOT EXISTS `" + date + "`  (" +
                     "  `uuid` varchar(255) NOT NULL COMMENT '玩家uuid'," +
                     "  `online_data` varchar(255) DEFAULT NULL COMMENT '在线数据'," +
                     "  PRIMARY KEY (`uuid`) " +
                     ") ENGINE = InnoDB CHARACTER SET = utf8";
-            ps = connection.prepareStatement(sql);
-            int i = ps.executeUpdate();
+            int i = statement.executeUpdate(sql);
             if (i > 0) {
                 String lang = CtOnlineReward.languageHandler.getLang("mysql.createTable");
                 ctOnlineReward.getLogger().info(lang);
             }
-        } catch (Exception e) {
+        } catch (SQLException e) {
             e.printStackTrace();
-        } finally {
-            if (connection != null) {
-                try {
-                    connection.close();
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-            }
-            if (ps != null) {
-                try {
-                    ps.close();
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-            }
         }
     }
 
+
     @Override
-    public int getPlayerOnlineTime(OfflinePlayer pLayer) {
-        JsonObject playerOnlineData = getPlayerOnlineData(pLayer);
+    public int getPlayerOnlineTime(OfflinePlayer player) {
+        JsonObject playerOnlineData = getPlayerOnlineData(player);
         JsonElement time = playerOnlineData.get("time");
-        if (time == null) {
-            insertPlayerOnlineTime(pLayer, 0);
-            return 0;
+        int onlineTime = time != null ? time.getAsInt() : 0;
+
+        if (onlineTime == 0) {
+            insertPlayerOnlineTime(player, 0);
         }
-        return time.getAsInt();
+
+        return onlineTime;
     }
 
     @Override
     public void addPlayerOnlineTime(OfflinePlayer player, int time) {
-        Connection connection = null;
-        PreparedStatement ps = null;
-        try {
-            connection = getConnection();
-            String date = Util.getDate();
-            String sql = "update `" + date + "` set `online_data` = ? where `uuid` = ?";
-            ps = connection.prepareStatement(sql);
+        String date = Util.getDate();
+        try (Connection connection = getConnection();
+             PreparedStatement ps = connection.prepareStatement("UPDATE `"+date+"` SET `online_data` = ? WHERE `uuid` = ?")) {
             JsonObject playerOnlineData = getPlayerOnlineData(player);
             playerOnlineData.addProperty("time", time);
-            String asString = playerOnlineData.toString();
-            ps.setString(1, asString);
+
+            ps.setString(1, playerOnlineData.toString());
             ps.setString(2, player.getUniqueId().toString());
             ps.executeUpdate();
-        } catch (Exception e) {
+        } catch (SQLException e) {
             e.printStackTrace();
-        } finally {
-            if (connection != null) {
-                try {
-                    connection.close();
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-            }
-            if (ps != null) {
-                try {
-                    ps.close();
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-            }
         }
     }
 
 
     public JsonObject getPlayerOnlineData(OfflinePlayer player) {
-        Connection connection = null;
-        PreparedStatement ps = null;
-        ResultSet rs = null;
-        try {
-            connection = getConnection();
+        try (Connection connection = getConnection();
+             PreparedStatement ps = connection.prepareStatement("SELECT `online_data` FROM `?` WHERE `uuid` = ?")) {
             String date = Util.getDate();
-            String sql = "select `online_data` from `" + date + "` where `uuid`=?";
-            ps = connection.prepareStatement(sql);
-            ps.setString(1, player.getUniqueId().toString());
-            rs = ps.executeQuery();
-            if (rs.next()) {
-                JsonParser jsonParser = new JsonParser();
-                JsonElement parse = jsonParser.parse(rs.getString(1));
-                if (parse.isJsonNull()) {
-                    return new JsonObject();
+            ps.setString(1, date);
+            ps.setString(2, player.getUniqueId().toString());
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    String onlineData = rs.getString(1);
+                    if (onlineData != null && !onlineData.isEmpty()) {
+                        JsonParser jsonParser = new JsonParser();
+                        JsonElement parse = jsonParser.parse(onlineData);
+                        if (!parse.isJsonNull()) {
+                            return parse.getAsJsonObject();
+                        }
+                    }
                 }
-                return parse.getAsJsonObject();
             }
-        } catch (Exception e) {
+        } catch (SQLException e) {
             e.printStackTrace();
-        } finally {
-            if (connection != null) {
-                try {
-                    connection.close();
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-            }
-            if (ps != null) {
-                try {
-                    ps.close();
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-            }
-            if (rs != null) {
-                try {
-                    rs.close();
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-            }
         }
         return new JsonObject();
     }
 
     @Override
     public void insertPlayerOnlineTime(OfflinePlayer player, int time) {
-        Connection connection = null;
-        PreparedStatement ps = null;
-        try {
-            connection = getConnection();
+        try (Connection connection = getConnection();
+             PreparedStatement ps = connection.prepareStatement("INSERT INTO `?` (`uuid`, `online_data`) VALUES (?, ?)")) {
             String date = Util.getDate();
-            String sql = "insert into `" + date + "` (`uuid`,`online_data`) values (?,?)";
-            ps = connection.prepareStatement(sql);
-            ps.setString(1, player.getUniqueId().toString());
+            ps.setString(1, date);
+            ps.setString(2, player.getUniqueId().toString());
             JsonObject jsonObject = new JsonObject();
             jsonObject.addProperty("time", time);
             jsonObject.add("reward", new JsonArray());
-            ps.setString(2, jsonObject.toString());
+            ps.setString(3, jsonObject.toString());
             int i = ps.executeUpdate();
             if (i < 0) {
                 ctOnlineReward.getLogger().warning("§c§l■ 数据库异常，数据插入失败！");
             }
-        } catch (Exception e) {
+        } catch (SQLException e) {
             String message = e.getMessage();
             if (message.contains("doesn't exist")) {
                 createTable();
             } else {
                 e.printStackTrace();
-            }
-        } finally {
-            if (connection != null) {
-                try {
-                    connection.close();
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-            }
-            if (ps != null) {
-                try {
-                    ps.close();
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
             }
         }
     }
@@ -206,61 +133,41 @@ public class MysqlBase implements DataService {
         JsonObject playerOnlineData = getPlayerOnlineData(player);
         JsonElement reward = playerOnlineData.get("reward");
         List<String> rewardList = new ArrayList<>();
-        if (reward == null) {
-            return rewardList;
-        }
-        JsonArray asJsonArray = reward.getAsJsonArray();
-        for (JsonElement jsonElement : asJsonArray) {
-            rewardList.add(jsonElement.getAsString());
+        if (reward != null && reward.isJsonArray()) {
+            JsonArray jsonArray = reward.getAsJsonArray();
+            for (JsonElement jsonElement : jsonArray) {
+                rewardList.add(jsonElement.getAsString());
+            }
         }
         return rewardList;
     }
 
+
     @Override
     public boolean addRewardToPlayData(String rewardId, Player player) {
-        Connection connection = null;
-        PreparedStatement ps = null;
-        try {
+        try (Connection connection = getConnection();
+             PreparedStatement ps = connection.prepareStatement("UPDATE `?` SET `online_data` = ? WHERE `uuid` = ?")) {
             JsonObject playerOnlineData = getPlayerOnlineData(player);
             JsonElement reward = playerOnlineData.get("reward");
             if (reward == null) {
                 playerOnlineData.add("reward", new JsonArray());
                 reward = playerOnlineData.get("reward");
             }
-            JsonArray asJsonArray = reward.getAsJsonArray();
-            asJsonArray.add(rewardId);
-            playerOnlineData.add("reward", asJsonArray);
-            connection = getConnection();
-            String date = Util.getDate();
-            String sql = "update `" + date + "` set `online_data` = ? where `uuid` = ?";
-            ps = connection.prepareStatement(sql);
-            ps.setString(1, playerOnlineData.toString());
-            ps.setString(2, player.getUniqueId().toString());
-            int i = ps.executeUpdate();
-            if (i > 0) {
-                return true;
+            if (reward.isJsonArray()) {
+                JsonArray rewardArray = reward.getAsJsonArray();
+                rewardArray.add(rewardId);
             }
-        } catch (Exception e) {
+            ps.setString(1, Util.getDate());
+            ps.setString(2, playerOnlineData.toString());
+            ps.setString(3, player.getUniqueId().toString());
+            int rowsUpdated = ps.executeUpdate();
+            return rowsUpdated > 0;
+        } catch (SQLException e) {
             e.printStackTrace();
-        } finally {
-            if (connection != null) {
-                try {
-                    connection.close();
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-            }
-            if (ps != null) {
-                try {
-                    ps.close();
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-
-            }
         }
         return false;
     }
+
 
     @Override
     public int getPlayerOnlineTimeWeek(OfflinePlayer player) {
@@ -283,6 +190,9 @@ public class MysqlBase implements DataService {
                         sql = sql.concat(" union all select `online_data` from `" + s + "` where uuid='" + uuid + "'");
                     }
                 }
+            }
+            if (StringUtils.isEmpty(sql)){
+                return onlineTime;
             }
             ps = connection.prepareStatement(sql);
             rs = ps.executeQuery();

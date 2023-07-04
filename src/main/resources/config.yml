@@ -61,3 +61,6 @@ Setting:
     use: false
     #时间限制  24小时制 如: 8 20 为早上八点到晚上八点记录在线时间  只能为整数  中间空格隔开
     limit: '8 20'
+  weekRankEnable: false
+  weekRankFilter:
+    - 'CMI-Fake-Operator'
