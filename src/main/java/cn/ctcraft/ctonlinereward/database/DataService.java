@@ -17,4 +17,6 @@ public interface DataService {
     int getPlayerOnlineTimeWeek(OfflinePlayer player);
     int getPlayerOnlineTimeMonth(OfflinePlayer player);
     int getPlayerOnlineTimeAll(OfflinePlayer player);
+
+
 }

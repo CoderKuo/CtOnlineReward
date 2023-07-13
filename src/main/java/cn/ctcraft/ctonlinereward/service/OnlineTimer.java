@@ -25,7 +25,9 @@ public class OnlineTimer extends BukkitRunnable {
     private OnlineTimer() {
         //插件可能在服务器正常开启后启用 此时手动添加在线玩家
         for (Player onlinePlayer : Bukkit.getServer().getOnlinePlayers()) {
-            addOnlinePlayer(onlinePlayer,onlinePlayer.getLastPlayed());
+            if (!onlinePlayerTime.containsKey(onlinePlayer.getUniqueId())){
+                addOnlinePlayer(onlinePlayer,System.currentTimeMillis());
+            }
         }
     }
 

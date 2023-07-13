@@ -81,10 +81,8 @@ public class MysqlBase implements DataService {
 
     public JsonObject getPlayerOnlineData(OfflinePlayer player) {
         try (Connection connection = getConnection();
-             PreparedStatement ps = connection.prepareStatement("SELECT `online_data` FROM `?` WHERE `uuid` = ?")) {
-            String date = Util.getDate();
-            ps.setString(1, date);
-            ps.setString(2, player.getUniqueId().toString());
+             PreparedStatement ps = connection.prepareStatement("SELECT `online_data` FROM `"+Util.getDate()+"` WHERE `uuid` = ?")) {
+            ps.setString(1, player.getUniqueId().toString());
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     String onlineData = rs.getString(1);
@@ -106,14 +104,12 @@ public class MysqlBase implements DataService {
     @Override
     public void insertPlayerOnlineTime(OfflinePlayer player, int time) {
         try (Connection connection = getConnection();
-             PreparedStatement ps = connection.prepareStatement("INSERT INTO `?` (`uuid`, `online_data`) VALUES (?, ?)")) {
-            String date = Util.getDate();
-            ps.setString(1, date);
-            ps.setString(2, player.getUniqueId().toString());
+             PreparedStatement ps = connection.prepareStatement("INSERT INTO `"+Util.getDate()+"` (`uuid`, `online_data`) VALUES (?, ?)")) {
+            ps.setString(1, player.getUniqueId().toString());
             JsonObject jsonObject = new JsonObject();
             jsonObject.addProperty("time", time);
             jsonObject.add("reward", new JsonArray());
-            ps.setString(3, jsonObject.toString());
+            ps.setString(2, jsonObject.toString());
             int i = ps.executeUpdate();
             if (i < 0) {
                 ctOnlineReward.getLogger().warning("§c§l■ 数据库异常，数据插入失败！");
@@ -146,7 +142,7 @@ public class MysqlBase implements DataService {
     @Override
     public boolean addRewardToPlayData(String rewardId, Player player) {
         try (Connection connection = getConnection();
-             PreparedStatement ps = connection.prepareStatement("UPDATE `?` SET `online_data` = ? WHERE `uuid` = ?")) {
+             PreparedStatement ps = connection.prepareStatement("UPDATE `"+Util.getDate()+"` SET `online_data` = ? WHERE `uuid` = ?")) {
             JsonObject playerOnlineData = getPlayerOnlineData(player);
             JsonElement reward = playerOnlineData.get("reward");
             if (reward == null) {
@@ -157,9 +153,8 @@ public class MysqlBase implements DataService {
                 JsonArray rewardArray = reward.getAsJsonArray();
                 rewardArray.add(rewardId);
             }
-            ps.setString(1, Util.getDate());
-            ps.setString(2, playerOnlineData.toString());
-            ps.setString(3, player.getUniqueId().toString());
+            ps.setString(1, playerOnlineData.toString());
+            ps.setString(2, player.getUniqueId().toString());
             int rowsUpdated = ps.executeUpdate();
             return rowsUpdated > 0;
         } catch (SQLException e) {

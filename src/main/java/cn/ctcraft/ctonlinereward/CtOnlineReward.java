@@ -7,6 +7,7 @@ import cn.ctcraft.ctonlinereward.listner.InventoryMonitor;
 import cn.ctcraft.ctonlinereward.listner.PlayerMonitor;
 import cn.ctcraft.ctonlinereward.service.OnlineTimer;
 import cn.ctcraft.ctonlinereward.service.RemindTimer;
+import cn.ctcraft.ctonlinereward.service.RewardService;
 import cn.ctcraft.ctonlinereward.service.YamlService;
 import cn.ctcraft.ctonlinereward.service.afk.AfkService;
 import cn.ctcraft.ctonlinereward.service.afk.AfkTimer;
@@ -15,8 +16,10 @@ import net.milkbowl.vault.economy.Economy;
 import org.black_ixx.playerpoints.PlayerPoints;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Material;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -144,8 +147,10 @@ public final class CtOnlineReward extends JavaPlugin {
         if (!file.exists()) {
             boolean mkdir = file.mkdir();
             if (mkdir) {
-                saveResource("rewardData/10min", false);
-                logger.info("§a§l● 奖励目录构建完成!");
+                boolean b = RewardService.getInstance().initRewardFile();
+                if (b) {
+                    logger.info("§a§l● 初次启动,奖励目录构建完成!");
+                }
             } else {
                 logger.warning("§c§l■ 奖励目录构建失败,插件即将关闭!");
                 getPluginLoader().disablePlugin(this);
@@ -190,9 +195,10 @@ public final class CtOnlineReward extends JavaPlugin {
         }
     }
 
+
+
     @Override
     public void onDisable() {
-
     }
 
     public PlayerPoints getPlayerPoints() {

@@ -4,18 +4,17 @@ import cn.ctcraft.ctonlinereward.CtOnlineReward;
 import cn.ctcraft.ctonlinereward.database.YamlData;
 import cn.ctcraft.ctonlinereward.pojo.RewardData;
 import cn.ctcraft.ctonlinereward.utils.SerializableUtil;
+import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.inventory.ItemStack;
 
 import java.io.*;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Logger;
 
 public class RewardService {
-    private static RewardService instance = new RewardService();
+    private static final RewardService instance = new RewardService();
     CtOnlineReward ctOnlineReward;
 
     private RewardService() {
@@ -96,6 +95,12 @@ public class RewardService {
     public byte[] getRewardDataBytes(RewardData rewardData) throws IOException {
         SerializableUtil serializableUtil = new SerializableUtil();
         return serializableUtil.singleObjectToByteArray(rewardData);
+    }
+
+    public boolean initRewardFile(){
+        ItemStack itemStack = new ItemStack(Material.APPLE);
+        RewardData rewardData = new RewardData(Collections.singletonList(itemStack));
+        return saveRewardData(rewardData,"10min");
     }
 
 
