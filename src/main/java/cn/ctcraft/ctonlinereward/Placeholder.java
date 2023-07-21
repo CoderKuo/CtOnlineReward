@@ -19,6 +19,7 @@ import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 import java.math.BigDecimal;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -62,6 +63,8 @@ public class Placeholder extends PlaceholderExpansion {
         if (player == null) {
             return "";
         }
+
+        params = params.toLowerCase(Locale.ROOT);
 
         if (params.equals("player")) {
             return player.getName();
