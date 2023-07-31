@@ -2,9 +2,8 @@ package cn.ctcraft.ctonlinereward;
 
 import cn.ctcraft.ctonlinereward.database.DataService;
 import cn.ctcraft.ctonlinereward.service.WeekOnlineRankService;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
+import cn.ctcraft.ctonlinereward.service.json.JsonObject;
+import cn.ctcraft.ctonlinereward.utils.JsonUtils;
 import com.udojava.evalex.Expression;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import org.bukkit.ChatColor;
@@ -12,28 +11,24 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
-import java.math.BigDecimal;
-import java.util.HashMap;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Set;
 
 public class Placeholder extends PlaceholderExpansion {
     private final CtOnlineReward ctOnlineReward = CtOnlineReward.getPlugin(CtOnlineReward.class);
     private final DataService playerDataService = CtOnlineReward.dataService;
-    private JsonObject papijson = new JsonObject();
+    private JsonObject papijson = JsonUtils.newJsonObject();
 
     public Placeholder() {
         loadPapiJson();
     }
 
     public void loadPapiJson(){
-        papijson = new JsonObject();
+        papijson = JsonUtils.newJsonObject();
         YamlConfiguration placeholderYaml = CtOnlineReward.placeholderYaml;
         Set<String> keys = placeholderYaml.getKeys(false);
         for (String key : keys) {
@@ -44,14 +39,14 @@ public class Placeholder extends PlaceholderExpansion {
             boolean hasFormula = value.getKeys(false).contains("formula");
             if (hasFormula) {
                 String formula = value.getString("formula");
-                JsonObject jsonObject = new JsonObject();
-                jsonObject.addProperty("type", type);
-                jsonObject.addProperty("formula", formula);
-                papijson.add(text, jsonObject);
+                JsonObject jsonObject = JsonUtils.newJsonObject();
+                jsonObject.put("type", type);
+                jsonObject.put("formula", formula);
+                papijson.put(text, jsonObject);
             } else {
-                JsonObject jsonObject = new JsonObject();
-                jsonObject.addProperty("type", type);
-                papijson.add(text, jsonObject);
+                JsonObject jsonObject = JsonUtils.newJsonObject();
+                jsonObject.put("type", type);
+                papijson.put(text, jsonObject);
             }
         }
         ctOnlineReward.getLogger().info(ChatColor.GREEN + "成功加载" + papijson.size() + "个papi变量");
@@ -86,14 +81,13 @@ public class Placeholder extends PlaceholderExpansion {
                 return String.valueOf(playerDataService.getPlayerOnlineTimeAll(player));
         }
 
-        JsonElement jsonElement = papijson.get(params);
-        if (jsonElement != null && jsonElement.isJsonObject()) {
-            JsonObject asJsonObject = jsonElement.getAsJsonObject();
-            String type = asJsonObject.get("type").getAsString();
-            boolean hasFormula = asJsonObject.has("formula");
+        JsonObject jsonObject = papijson.getJsonObject(params);
+        if (jsonObject != null) {
+            String type = jsonObject.getString("type");
+            boolean hasFormula = jsonObject.has("formula");
             if (hasFormula) {
                 ScriptEngine javaScript = new ScriptEngineManager().getEngineByName("JavaScript");
-                String formula = asJsonObject.get("formula").getAsString();
+                String formula = jsonObject.getString("formula");
                 String newFormula;
                 switch (type) {
                     case "all":
@@ -144,9 +138,9 @@ public class Placeholder extends PlaceholderExpansion {
         String[] s = params.split("_");
         if (s[0].equalsIgnoreCase("week")) {
             JsonObject rankPlayer = WeekOnlineRankService.getRankPlayer(Integer.parseInt(s[1]));
-            JsonElement name = rankPlayer.get("name");
-            JsonElement time = rankPlayer.get("time");
-            return name.getAsString() + " - " + time.getAsString();
+            String name = rankPlayer.getString("name");
+            String time = rankPlayer.getString("time");
+            return name + " - " + time;
         }
 
         return null;

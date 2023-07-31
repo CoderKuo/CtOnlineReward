@@ -1,8 +1,12 @@
 10min:
-  #单位分钟
-  #变量{onlineTime}今日在线时间  {weekOnlineTime}本周在线时间 {monthOnlineTime}本月在线时间 {allOnlineTime} 总在线时间
-  #计算符号 ==等于 <=小于等于 >=大于等于 !=不等于 >大于 <小于 +加 -减 *乘 /除 &&与 ||或
-  time: "{onlineTime}>=10"
+  #激活条件
+  # today今天
+  # week本周
+  # month本月
+  # range范围
+  # interval上次领取间隔
+  condition:
+    today: 10m
   rewardData: '10min'
   permission: 'CtOnlineReward.reward.10min'
   #可领取时公告提醒

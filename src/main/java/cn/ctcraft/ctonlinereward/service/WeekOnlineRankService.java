@@ -1,7 +1,8 @@
 package cn.ctcraft.ctonlinereward.service;
 
 import cn.ctcraft.ctonlinereward.CtOnlineReward;
-import com.google.gson.*;
+import cn.ctcraft.ctonlinereward.service.json.JsonObject;
+import cn.ctcraft.ctonlinereward.utils.JsonUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -18,17 +19,17 @@ public class WeekOnlineRankService {
     public static JsonObject getRankPlayer(int index){
         if (list.size() > index){
             return list.get(index);
-        }else{
-            if (index > Bukkit.getOfflinePlayers().length){
-                JsonObject jsonObject = new JsonObject();
-                jsonObject.add("name",new JsonPrimitive("未上榜"));
-                jsonObject.add("time",new JsonPrimitive("未上榜"));
+        }else {
+            if (index > Bukkit.getOfflinePlayers().length) {
+                JsonObject jsonObject = JsonUtils.newJsonObject();
+                jsonObject.put("name", "未上榜");
+                jsonObject.put("time", "未上榜");
                 return jsonObject;
             }
             refreshList();
-            JsonObject jsonObject = new JsonObject();
-            jsonObject.add("name",new JsonPrimitive("NaN"));
-            jsonObject.add("time",new JsonPrimitive("请稍后再次请求"));
+            JsonObject jsonObject = JsonUtils.newJsonObject();
+            jsonObject.put("name", "NaN");
+            jsonObject.put("time", "请稍后再次请求");
             return jsonObject;
         }
     }
@@ -42,13 +43,13 @@ public class WeekOnlineRankService {
                 for (OfflinePlayer offlinePlayer : Bukkit.getOfflinePlayers()) {
                     FileConfiguration config = plugin.getConfig();
                     List<String> stringList = config.getStringList("Setting.weekRankFilter");
-                    if (stringList.contains(offlinePlayer.getName())){
+                    if (stringList.contains(offlinePlayer.getName())) {
                         continue;
                     }
                     int playerOnlineTimeWeek = CtOnlineReward.dataService.getPlayerOnlineTimeWeek(offlinePlayer);
-                    JsonObject jsonObject = new JsonObject();
-                    jsonObject.add("name",new JsonPrimitive(offlinePlayer.getName()));
-                    jsonObject.add("time",new JsonPrimitive(playerOnlineTimeWeek));
+                    JsonObject jsonObject = JsonUtils.newJsonObject();
+                    jsonObject.put("name", offlinePlayer.getName());
+                    jsonObject.put("time", playerOnlineTimeWeek);
                     alist.add(jsonObject);
                 }
                 list = alist.stream().sorted(Comparator.comparing(WeekOnlineRankService::getRank).reversed()).collect(Collectors.toList());
@@ -57,6 +58,6 @@ public class WeekOnlineRankService {
     }
 
     public static int getRank(JsonObject json){
-        return json.get("time").getAsInt();
+        return json.getInt("time");
     }
 }

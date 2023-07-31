@@ -16,10 +16,8 @@ import net.milkbowl.vault.economy.Economy;
 import org.black_ixx.playerpoints.PlayerPoints;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.Material;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -138,6 +136,7 @@ public final class CtOnlineReward extends JavaPlugin {
     }
 
     public void load() {
+
         saveDefaultConfig();
 
         File file = new File(getDataFolder() + "/rewardData/");
@@ -193,6 +192,8 @@ public final class CtOnlineReward extends JavaPlugin {
             logger.warning("§c§l■ papi变量配置文件加载失败!");
             e.printStackTrace();
         }
+
+
     }
 
 

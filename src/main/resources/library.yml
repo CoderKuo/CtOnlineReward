@@ -1,0 +1,4 @@
+fastjson:
+  group: 'com.alibaba'
+  artifact: 'fastjson'
+  version: '2.0.37'

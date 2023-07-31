@@ -11,10 +11,12 @@ import org.bukkit.inventory.ItemStack;
 
 import java.io.*;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
 public class RewardService {
     private static final RewardService instance = new RewardService();
+    private Map<String, ConfigurationSection> rewards = new ConcurrentHashMap<>();
     CtOnlineReward ctOnlineReward;
 
     private RewardService() {
@@ -26,12 +28,23 @@ public class RewardService {
         return instance;
     }
 
+    public void loadRewardYamlToMemory(Map<String, ConfigurationSection> rewards) {
+        this.rewards = rewards;
+    }
+
+    public ConfigurationSection getRewardSection(String rewardId) {
+        if (rewards.containsKey(rewardId)) {
+            return rewards.get(rewardId);
+        } else {
+            throw new RuntimeException("没有找到id为" + rewardId + "的奖励配置,请检查rewards目录下的配置文件");
+        }
+    }
+
     public List<ItemStack> getItemStackFromRewardId(String rewardId) {
-        YamlConfiguration rewardYaml = YamlData.rewardYaml;
-        if (!rewardYaml.contains(rewardId)) {
+        if (!rewards.containsKey(rewardId)) {
             return null;
         }
-        ConfigurationSection rewardIdYaml = rewardYaml.getConfigurationSection(rewardId);
+        ConfigurationSection rewardIdYaml = rewards.get(rewardId);
         if (!rewardIdYaml.contains("rewardData")) {
             return null;
         }

@@ -1,0 +1,9 @@
+name: 'dakuo'
+
+online_time:
+  - login_time: ''
+    logout_time: ''
+    duration: ''
+rewards:
+  - reward_Id: '10min'
+    received_at: 'xxx'

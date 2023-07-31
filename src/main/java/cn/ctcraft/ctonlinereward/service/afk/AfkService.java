@@ -1,6 +1,7 @@
 package cn.ctcraft.ctonlinereward.service.afk;
 
 import cn.ctcraft.ctonlinereward.CtOnlineReward;
+import cn.ctcraft.ctonlinereward.database.DataHandler;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
@@ -28,7 +29,8 @@ public class AfkService {
         if (!contains){
             playerAfkList.add(player.getUniqueId().toString());
             CtOnlineReward plugin = CtOnlineReward.getPlugin(CtOnlineReward.class);
-            player.sendMessage(plugin.getConfig().getString("Setting.afkConfig.message.joinAfk").replace("&","§"));
+            player.sendMessage(plugin.getConfig().getString("Setting.afkConfig.message.joinAfk").replace("&", "§"));
+            DataHandler.getInstance().playerLevel(player);
         }
     }
 
@@ -40,6 +42,7 @@ public class AfkService {
         playerAfkList.remove(uuid);
         CtOnlineReward plugin = CtOnlineReward.getPlugin(CtOnlineReward.class);
         OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(UUID.fromString(uuid));
+        DataHandler.getInstance().playerJoin(offlinePlayer);
         if (offlinePlayer.isOnline()){
             Player player = offlinePlayer.getPlayer();
             player.sendMessage(plugin.getConfig().getString("Setting.afkConfig.message.levelAfk").replace("&","§"));

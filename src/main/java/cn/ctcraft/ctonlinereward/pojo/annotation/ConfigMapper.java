@@ -5,5 +5,9 @@ import java.lang.annotation.*;
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ConfigMapper {
-    public String value();
+    public String key() default "";
+
+    public String setFunction() default "";
+
+    public String getFunction() default "";
 }
