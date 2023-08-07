@@ -1,7 +1,6 @@
 package cn.ctcraft.ctonlinereward.command;
 
 import cn.ctcraft.ctonlinereward.CtOnlineReward;
-import cn.ctcraft.ctonlinereward.service.RemindTimer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;

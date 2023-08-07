@@ -1,5 +1,6 @@
 package cn.ctcraft.ctonlinereward.database;
 
+import cn.ctcraft.ctonlinereward.pojo.RewardData;
 import cn.ctcraft.ctonlinereward.pojo.RewardInDatabase;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
@@ -13,7 +14,7 @@ public interface DataService {
 
     void insertPlayerOnlineTime(OfflinePlayer player, long loginTime, long logoutTime);
 
-    List<String> getPlayerRewardArray(OfflinePlayer player, long start, long end);
+    List<RewardInDatabase> getPlayerRewardArray(OfflinePlayer player, long start, long end);
 
     boolean addRewardToPlayData(String rewardId, Player player);
 

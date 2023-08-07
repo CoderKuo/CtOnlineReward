@@ -1,11 +1,10 @@
-package cn.ctcraft.ctonlinereward.service;
+package cn.ctcraft.ctonlinereward.service.scheduler;
 
 import cn.ctcraft.ctonlinereward.CtOnlineReward;
 import cn.ctcraft.ctonlinereward.database.DataHandler;
-import cn.ctcraft.ctonlinereward.database.DataService;
 import cn.ctcraft.ctonlinereward.database.YamlData;
 import cn.ctcraft.ctonlinereward.pojo.OnlineRemind;
-import cn.ctcraft.ctonlinereward.service.afk.AfkService;
+import cn.ctcraft.ctonlinereward.service.WeekOnlineRankService;
 import cn.ctcraft.ctonlinereward.utils.ConfigUtil;
 import cn.ctcraft.ctonlinereward.utils.Util;
 import org.bukkit.Bukkit;
@@ -13,9 +12,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
-import java.util.UUID;
 
 public class OnlineTimer extends BukkitRunnable {
     private static OnlineTimer instance = new OnlineTimer();

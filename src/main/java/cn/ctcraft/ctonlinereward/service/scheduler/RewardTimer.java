@@ -1,4 +1,4 @@
-package cn.ctcraft.ctonlinereward.service;
+package cn.ctcraft.ctonlinereward.service.scheduler;
 
 import org.bukkit.scheduler.BukkitRunnable;
 

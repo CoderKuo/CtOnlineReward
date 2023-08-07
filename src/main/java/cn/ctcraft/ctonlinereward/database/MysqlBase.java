@@ -2,14 +2,10 @@ package cn.ctcraft.ctonlinereward.database;
 
 import cn.ctcraft.ctonlinereward.CtOnlineReward;
 import cn.ctcraft.ctonlinereward.pojo.OnlineTimeData;
+import cn.ctcraft.ctonlinereward.pojo.RewardData;
 import cn.ctcraft.ctonlinereward.pojo.RewardInDatabase;
 import cn.ctcraft.ctonlinereward.service.cache.CacheSystem;
-import cn.ctcraft.ctonlinereward.service.json.JsonObject;
-import cn.ctcraft.ctonlinereward.utils.JsonUtils;
 import cn.ctcraft.ctonlinereward.utils.Util;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
@@ -141,7 +137,6 @@ public class MysqlBase implements DataService {
                 sql.append("TIMESTAMPDIFF(MINUTE, '" + Util.getDateNew(onlineTimeDatum.getLoginTime()) + "', '" + Util.getDateNew(onlineTimeDatum.getLogoutTime()) + "')),");
             }
             sql = sql.deleteCharAt(sql.length() - 2);
-            sql.append(";");
             int i = statement.executeUpdate(sql.toString());
             if (i < 0) {
                 ctOnlineReward.getLogger().warning("§c§l■ 数据库异常，数据插入失败！");
@@ -157,7 +152,7 @@ public class MysqlBase implements DataService {
     }
 
     @Override
-    public List<String> getPlayerRewardArray(OfflinePlayer player, long start, long end) {
+    public List<RewardInDatabase> getPlayerRewardArray(OfflinePlayer player, long start, long end) {
         try (Connection connection = getConnection(); PreparedStatement ps = connection.prepareStatement("SELECT reward_id,received_at" +
                 "FROM rewards" +
                 "WHERE player_uuid = '?'" +
@@ -166,10 +161,11 @@ public class MysqlBase implements DataService {
 
             ps.setString(1, player.getUniqueId().toString());
             ResultSet resultSet = ps.executeQuery();
-            List<String> list = new ArrayList<>();
+            List<RewardInDatabase> list = new ArrayList<>();
             while (resultSet.next()) {
                 String reward_id = resultSet.getString("reward_id");
-                list.add(reward_id);
+                Timestamp rewardAt = resultSet.getTimestamp("reward_at");
+                list.add(new RewardInDatabase(player.getUniqueId().toString(),reward_id,rewardAt.getTime()));
             }
             return list;
         } catch (Exception e) {

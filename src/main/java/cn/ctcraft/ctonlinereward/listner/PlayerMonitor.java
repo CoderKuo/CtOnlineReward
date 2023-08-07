@@ -1,7 +1,6 @@
 package cn.ctcraft.ctonlinereward.listner;
 
 import cn.ctcraft.ctonlinereward.database.DataHandler;
-import cn.ctcraft.ctonlinereward.service.OnlineTimer;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;

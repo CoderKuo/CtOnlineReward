@@ -8,6 +8,9 @@ public class Month extends RewardCondition {
 
     public Month(OfflinePlayer player, String param) {
         super(player, param);
+        addPlaceholder("reminder",offlinePlayer ->{
+            return String.valueOf(DataHandler.getInstance().getPlayerOnlineTimeMonth(offlinePlayer) - convertTime());
+        });
     }
 
     @Override

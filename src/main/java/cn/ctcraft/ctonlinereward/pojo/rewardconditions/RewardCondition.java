@@ -13,12 +13,19 @@ public abstract class RewardCondition {
 
     public OfflinePlayer player;
     public String param;
+    public Configuration config = null;
     private List<Function<Configuration, Boolean>> otherCheckFunctions = new ArrayList<>();
     private Map<String, Function<OfflinePlayer, String>> placeholders = new ConcurrentHashMap<>();
 
     public RewardCondition(OfflinePlayer player, String param) {
         this.player = player;
         this.param = param;
+
+        if (isNeedConfig()){
+            if (config == null){
+                throw new IllegalArgumentException("config can't = null");
+            }
+        }
     }
 
     protected int convertTime(String str) {
@@ -57,6 +64,14 @@ public abstract class RewardCondition {
         return otherCheckFunctions.stream().allMatch(function -> function.apply(configuration));
     }
 
+    public void setConfig(Configuration config){
+        this.config = config;
+    }
+
+    public Configuration getConfig(){
+        return config;
+    }
+
     public String placeholder(String key) {
         return placeholders.get(key).apply(player);
     }
@@ -66,6 +81,8 @@ public abstract class RewardCondition {
     }
 
     abstract public String getName();
+
+    abstract public boolean isNeedConfig();
 
     abstract boolean check();
 }

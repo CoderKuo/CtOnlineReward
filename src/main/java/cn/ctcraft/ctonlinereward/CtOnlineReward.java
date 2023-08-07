@@ -5,12 +5,12 @@ import cn.ctcraft.ctonlinereward.database.*;
 import cn.ctcraft.ctonlinereward.inventory.RewardSetInventoryMonitor;
 import cn.ctcraft.ctonlinereward.listner.InventoryMonitor;
 import cn.ctcraft.ctonlinereward.listner.PlayerMonitor;
-import cn.ctcraft.ctonlinereward.service.OnlineTimer;
-import cn.ctcraft.ctonlinereward.service.RemindTimer;
 import cn.ctcraft.ctonlinereward.service.RewardService;
 import cn.ctcraft.ctonlinereward.service.YamlService;
 import cn.ctcraft.ctonlinereward.service.afk.AfkService;
 import cn.ctcraft.ctonlinereward.service.afk.AfkTimer;
+import cn.ctcraft.ctonlinereward.service.scheduler.OnlineTimer;
+import cn.ctcraft.ctonlinereward.service.scheduler.RemindTimer;
 import cn.ctcraft.ctonlinereward.utils.version;
 import net.milkbowl.vault.economy.Economy;
 import org.black_ixx.playerpoints.PlayerPoints;
@@ -58,6 +58,7 @@ public final class CtOnlineReward extends JavaPlugin {
             }
         }.runTaskAsynchronously(this);
 
+
         Metrics metrics = new Metrics(this);
 
         String databaseType = getConfig().getString("database.type");
@@ -102,6 +103,7 @@ public final class CtOnlineReward extends JavaPlugin {
 
 
         languageHandler = new LanguageHandler();
+
 
         OnlineTimer.getInstance().runTaskTimerAsynchronously(this, 1200, 1200);
 

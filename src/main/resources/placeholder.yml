@@ -1,9 +1,4 @@
-allOnlineTime:
-  text: "onlineTimeAllNew"
-  value:
-    type: "all"
-allOnlineTimeMin:
-  text: "onlineTimeMin"
-  value:
-    type: "all"
-    formula: "x/60"
+interval:
+  reminder:
+    no-receive: '暂未领取'
+    received: '剩余时间{0}天{1}小时{2}分钟'

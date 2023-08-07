@@ -1,6 +1,7 @@
 package cn.ctcraft.ctonlinereward.database;
 
 import cn.ctcraft.ctonlinereward.CtOnlineReward;
+import cn.ctcraft.ctonlinereward.pojo.RewardInDatabase;
 import cn.ctcraft.ctonlinereward.utils.Util;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
@@ -51,8 +52,10 @@ public class DataHandler implements DataService {
         dataService.insertPlayerOnlineTime(player, loginTime, logoutTime);
     }
 
+
+
     @Override
-    public List<String> getPlayerRewardArray(OfflinePlayer player, long start, long end) {
+    public List<RewardInDatabase> getPlayerRewardArray(OfflinePlayer player, long start, long end) {
         return dataService.getPlayerRewardArray(player, start, end);
     }
 
@@ -84,6 +87,7 @@ public class DataHandler implements DataService {
         int i = Integer.parseInt(Util.timeDiff(playerJoinTime.get(player.getUniqueId().toString()), System.currentTimeMillis())) + dataService.getPlayerOnlineTime(player);
         return dataService.getPlayerOnlineTimeFromRange(player, start, end) + i;
     }
+
 
     @Override
     public void flush() {
