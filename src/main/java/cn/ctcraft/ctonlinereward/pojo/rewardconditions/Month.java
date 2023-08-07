@@ -8,7 +8,7 @@ public class Month extends RewardCondition {
 
     public Month(OfflinePlayer player, String param) {
         super(player, param);
-        addPlaceholder("reminder",offlinePlayer ->{
+        addPlaceholder("reminder", offlinePlayer -> {
             return String.valueOf(DataHandler.getInstance().getPlayerOnlineTimeMonth(offlinePlayer) - convertTime());
         });
     }
@@ -16,6 +16,11 @@ public class Month extends RewardCondition {
     @Override
     public String getName() {
         return "month";
+    }
+
+    @Override
+    public boolean isNeedConfig() {
+        return false;
     }
 
     @Override

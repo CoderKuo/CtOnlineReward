@@ -24,4 +24,9 @@ public class Today extends RewardCondition {
         return "today";
     }
 
+    @Override
+    public boolean isNeedConfig() {
+        return false;
+    }
+
 }

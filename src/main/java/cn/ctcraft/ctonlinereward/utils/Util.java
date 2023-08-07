@@ -2,6 +2,9 @@ package cn.ctcraft.ctonlinereward.utils;
 
 import cn.ctcraft.ctonlinereward.service.json.JsonObject;
 import com.google.gson.JsonElement;
+import org.apache.commons.lang3.tuple.ImmutableTriple;
+import org.apache.commons.lang3.tuple.MutableTriple;
+import org.apache.commons.lang3.tuple.Triple;
 import org.bukkit.Bukkit;
 
 import java.text.SimpleDateFormat;
@@ -106,5 +109,18 @@ public class Util {
     public static int timestampToHours(long timestamp) {
         SimpleDateFormat hh = new SimpleDateFormat("HH");
         return Integer.parseInt(hh.format(timestamp));
+    }
+
+    public static Triple<Integer, Integer, Integer> formatMinutesToDaysHoursMinutes(int minutes) {
+        MutableTriple<Integer, Integer, Integer> date = new MutableTriple<>(0, 0, 0);
+        if (minutes < 0) {
+            return date;
+        }
+
+        date.left = minutes / (24 * 60);
+        int remainingMinutes = minutes % (24 * 60);
+        date.middle = remainingMinutes / 60;
+        date.right = remainingMinutes % 60;
+        return date;
     }
 }

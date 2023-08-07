@@ -6,35 +6,39 @@ import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.File;
 
-public class PlaceholderUtils{
-    public static PlaceholderUtils instace = new PlaceholderUtils();
+public class PlaceholderUtils {
+    public static PlaceholderUtils instance = new PlaceholderUtils();
 
-    public PlaceholderUtils(){}
+    private PlaceholderUtils() {
+    }
 
-    public static PlaceholderUtils getInstace() {
-        return instace;
+    public static PlaceholderUtils getInstance() {
+        return instance;
     }
 
     private Configuration config;
 
-    public void loadPlaceholderConfigToMemory(){
+    public void loadPlaceholderConfigToMemory() {
         CtOnlineReward plugin = CtOnlineReward.getPlugin(CtOnlineReward.class);
         try {
             File file = new File(plugin.getDataFolder(), "placeholder.yml");
-            if (!file.exists()){
-                plugin.saveResource("placeholder.yml",false);
+            if (!file.exists()) {
+                plugin.saveResource("placeholder.yml", false);
             }
             config = YamlConfiguration.loadConfiguration(file);
             plugin.getLogger().info("placeholder.yml加载成功！");
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public String getValue(String key,Object... values){
-        return String.format(config.getString(key), values);
+    public void insertVar(String var) {
+
     }
 
+    public String getValue(String key, Object... values) {
+        return String.format(config.getString(key), values);
+    }
 
 
 }

@@ -3,31 +3,37 @@ package cn.ctcraft.ctonlinereward.service.rewardHandler;
 import cn.ctcraft.ctonlinereward.CtOnlineReward;
 import cn.ctcraft.ctonlinereward.database.DataService;
 import com.udojava.evalex.Expression;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
+import javax.security.auth.login.Configuration;
 import java.math.BigDecimal;
 
 public class RewardOnlineTimeHandler {
     private DataService dataService = CtOnlineReward.dataService;
     private static RewardOnlineTimeHandler instance = new RewardOnlineTimeHandler();
-    private RewardOnlineTimeHandler(){}
+
+    private RewardOnlineTimeHandler() {
+    }
 
     public static RewardOnlineTimeHandler getInstance() {
         return instance;
     }
-    
-    public boolean onlineTimeIsOk(Player player,String timeFormula){
+
+    public boolean onlineTimeIsOk(Player player, ConfigurationSection section) {
+
+
         String temp = variablesHandler(player, timeFormula);
         ScriptEngine javaScript = new ScriptEngineManager().getEngineByName("JavaScript");
-        if (javaScript == null){
+        if (javaScript == null) {
             Expression expression = new Expression(temp);
             BigDecimal eval = expression.eval();
-            if (eval.intValue() == 1){
+            if (eval.intValue() == 1) {
                 return true;
-            }else{
+            } else {
                 return false;
             }
         }

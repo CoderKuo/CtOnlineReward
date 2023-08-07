@@ -1,12 +1,12 @@
 package cn.ctcraft.ctonlinereward.service;
 
 import cn.ctcraft.ctonlinereward.CtOnlineReward;
-import cn.ctcraft.ctonlinereward.database.YamlData;
 import cn.ctcraft.ctonlinereward.pojo.RewardData;
+import cn.ctcraft.ctonlinereward.pojo.rewardconditions.RewardCondition;
+import cn.ctcraft.ctonlinereward.utils.ClassUtils;
 import cn.ctcraft.ctonlinereward.utils.SerializableUtil;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.inventory.ItemStack;
 
 import java.io.*;
@@ -18,6 +18,8 @@ public class RewardService {
     private static final RewardService instance = new RewardService();
     private Map<String, ConfigurationSection> rewards = new ConcurrentHashMap<>();
     CtOnlineReward ctOnlineReward;
+
+    private List<Class<?>> conditions = new ArrayList<>();
 
     private RewardService() {
         ctOnlineReward = CtOnlineReward.getPlugin(CtOnlineReward.class);
@@ -110,10 +112,21 @@ public class RewardService {
         return serializableUtil.singleObjectToByteArray(rewardData);
     }
 
-    public boolean initRewardFile(){
+    public boolean initRewardFile() {
         ItemStack itemStack = new ItemStack(Material.APPLE);
         RewardData rewardData = new RewardData(Collections.singletonList(itemStack));
-        return saveRewardData(rewardData,"10min");
+        return saveRewardData(rewardData, "10min");
+    }
+
+    public void registerRewardCondition() {
+        List<Class<?>> subclassesOfAbstractClass = ClassUtils.getSubclassesOfAbstractClass("cn.ctcraft.ctonlinereward.pojo.rewardconditions", RewardCondition.class);
+        Logger logger = ctOnlineReward.getLogger();
+        for (Class<?> ofAbstractClass : subclassesOfAbstractClass) {
+            String name = ofAbstractClass.getName();
+            conditions.add(ofAbstractClass);
+        }
+
+
     }
 
 

@@ -7,7 +7,7 @@ public class Week extends RewardCondition {
 
     public Week(OfflinePlayer player, String param) {
         super(player, param);
-        addPlaceholder("reminder",offlinePlayer -> {
+        addPlaceholder("reminder", offlinePlayer -> {
             return String.valueOf(DataHandler.getInstance().getPlayerOnlineTimeWeek(offlinePlayer) - convertTime());
         });
     }
@@ -15,6 +15,11 @@ public class Week extends RewardCondition {
     @Override
     public String getName() {
         return "week";
+    }
+
+    @Override
+    public boolean isNeedConfig() {
+        return false;
     }
 
     @Override

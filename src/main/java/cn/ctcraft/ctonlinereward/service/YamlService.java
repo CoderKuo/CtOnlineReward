@@ -3,8 +3,8 @@ package cn.ctcraft.ctonlinereward.service;
 import cn.ctcraft.ctonlinereward.CtOnlineReward;
 import cn.ctcraft.ctonlinereward.database.YamlData;
 import cn.ctcraft.ctonlinereward.service.json.JsonObject;
+import cn.ctcraft.ctonlinereward.service.scheduler.RemindTimer;
 import cn.ctcraft.ctonlinereward.utils.JsonUtils;
-import cn.ctcraft.ctonlinereward.utils.Util;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -14,7 +14,6 @@ import java.io.FileFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.*;
-import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -73,7 +72,7 @@ public class YamlService {
                 yamlConfiguration.getKeys(false).forEach(key -> {
                     rewards.put(key, yamlConfiguration.getConfigurationSection(key));
                     loadRemindJson(yamlConfiguration.getConfigurationSection(key), key);
-                    ctOnlineReward.getLogger().info(key + " 奖励加载成功!");
+                    ctOnlineReward.getLogger().info(key + " 奖励文件加载成功!");
                 });
             });
             RewardService.getInstance().loadRewardYamlToMemory(rewards);
@@ -85,7 +84,7 @@ public class YamlService {
         return false;
     }
 
-    public boolean loadRemindJson(ConfigurationSection section, String key) {
+    public void loadRemindJson(ConfigurationSection section, String key) {
         YamlData.remindJson = JsonUtils.newJsonArray();
         if (section.getBoolean("remind", false)) {
             JsonObject jsonObject = JsonUtils.newJsonObject();
@@ -97,7 +96,6 @@ public class YamlService {
             }
             RemindTimer.remindJson.addFromJsonString(jsonObject.toJsonString(false));
         }
-        return true;
     }
 
     private void saveResourceFile(String resourcePath) {

@@ -3,6 +3,7 @@ package cn.ctcraft.ctonlinereward.pojo.rewardconditions;
 import cn.ctcraft.ctonlinereward.database.DataHandler;
 import cn.ctcraft.ctonlinereward.service.json.JsonObject;
 import cn.ctcraft.ctonlinereward.utils.JsonUtils;
+import jdk.internal.net.http.common.Pair;
 import org.bukkit.OfflinePlayer;
 
 import java.time.LocalDate;
@@ -10,6 +11,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.function.Function;
 
 /**
  * 时间范围
@@ -31,7 +33,12 @@ public class Range extends RewardCondition {
 
     public Range(OfflinePlayer player, String param) {
         super(player, param);
+        addPlaceholder("reminder", player1 -> {
+            Pair<Long, Long> startAndEndTime = getStartAndEndTime();
+            return String.valueOf(DataHandler.getInstance().getPlayerOnlineTimeFromRange(player, startAndEndTime.first, startAndEndTime.second) - convertTime(JsonUtils.parse(param).getString("target")));
+        });
     }
+
 
     @Override
     public String getName() {
@@ -39,7 +46,17 @@ public class Range extends RewardCondition {
     }
 
     @Override
+    public boolean isNeedConfig() {
+        return false;
+    }
+
+    @Override
     boolean check() {
+        Pair<Long, Long> startAndEndTime = getStartAndEndTime();
+        return DataHandler.getInstance().getPlayerOnlineTimeFromRange(player, startAndEndTime.first, startAndEndTime.second) >= convertTime(JsonUtils.parse(param).getString("target"));
+    }
+
+    private Pair<Long, Long> getStartAndEndTime() {
         JsonObject parse = JsonUtils.parse(param);
         String start = parse.getString("start");
         String end = parse.getString("end");
@@ -63,6 +80,6 @@ public class Range extends RewardCondition {
 
         long startTimestamp = startDateTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
         long endTimestamp = endDateTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
-        return DataHandler.getInstance().getPlayerOnlineTimeFromRange(player, startTimestamp, endTimestamp) >= convertTime(parse.getString("target"));
+        return new Pair<>(startTimestamp, endTimestamp);
     }
 }

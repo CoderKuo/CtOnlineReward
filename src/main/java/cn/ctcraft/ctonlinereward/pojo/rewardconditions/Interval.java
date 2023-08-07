@@ -3,6 +3,8 @@ package cn.ctcraft.ctonlinereward.pojo.rewardconditions;
 import cn.ctcraft.ctonlinereward.database.DataHandler;
 import cn.ctcraft.ctonlinereward.pojo.RewardInDatabase;
 import cn.ctcraft.ctonlinereward.utils.PlaceholderUtils;
+import cn.ctcraft.ctonlinereward.utils.Util;
+import org.apache.commons.lang3.tuple.Triple;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.Configuration;
 
@@ -25,9 +27,11 @@ public class Interval extends RewardCondition {
 
             long l = playerRewardArray.stream().filter(reward -> reward.getReward_Id().equals(name)).mapToLong(RewardInDatabase::getReceived_at).max().orElse(-1L);
             if (l == -1L){
-                return PlaceholderUtils.instace.getValue("interval.reminder.no-receive");
-            }else{
-                return PlaceholderUtils.instace.getValue("interval.reminder.received");
+                return PlaceholderUtils.getInstance().getValue("interval.reminder.no-receive");
+            }else {
+                String s = Util.timeDiff(l, System.currentTimeMillis());
+                Triple<Integer, Integer, Integer> date = Util.formatMinutesToDaysHoursMinutes(Integer.parseInt(s));
+                return PlaceholderUtils.getInstance().getValue("interval.reminder.received", date.getLeft(), date.getMiddle(), date.getRight());
             }
 
         });
