@@ -195,6 +195,7 @@ public final class CtOnlineReward extends JavaPlugin {
             e.printStackTrace();
         }
 
+        RewardService.getInstance().registerRewardCondition();
 
     }
 

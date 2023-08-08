@@ -5,3 +5,5 @@ reward:
   volume: '&c&l■ 此奖励需要{rewardSize}格背包空间'
   volume2: '&c&l■ 背包空间不足,请先清空背包!'
   volume3: '&c&l■ 权限不足!'
+debug:
+  condition: '{0} 注册成功!'

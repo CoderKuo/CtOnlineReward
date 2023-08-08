@@ -2,6 +2,7 @@ package cn.ctcraft.ctonlinereward.service.rewardHandler;
 
 import cn.ctcraft.ctonlinereward.CtOnlineReward;
 import cn.ctcraft.ctonlinereward.database.DataService;
+import cn.ctcraft.ctonlinereward.service.RewardService;
 import com.udojava.evalex.Expression;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
@@ -24,7 +25,9 @@ public class RewardOnlineTimeHandler {
     }
 
     public boolean onlineTimeIsOk(Player player, ConfigurationSection section) {
-
+        for (String key : section.getKeys(false)) {
+            RewardService.getInstance().
+        }
 
         String temp = variablesHandler(player, timeFormula);
         ScriptEngine javaScript = new ScriptEngineManager().getEngineByName("JavaScript");

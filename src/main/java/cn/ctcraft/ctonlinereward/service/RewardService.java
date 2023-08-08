@@ -1,6 +1,7 @@
 package cn.ctcraft.ctonlinereward.service;
 
 import cn.ctcraft.ctonlinereward.CtOnlineReward;
+import cn.ctcraft.ctonlinereward.LanguageHandler;
 import cn.ctcraft.ctonlinereward.pojo.RewardData;
 import cn.ctcraft.ctonlinereward.pojo.rewardconditions.RewardCondition;
 import cn.ctcraft.ctonlinereward.utils.ClassUtils;
@@ -12,6 +13,7 @@ import org.bukkit.inventory.ItemStack;
 import java.io.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
 public class RewardService {
@@ -19,7 +21,7 @@ public class RewardService {
     private Map<String, ConfigurationSection> rewards = new ConcurrentHashMap<>();
     CtOnlineReward ctOnlineReward;
 
-    private List<Class<?>> conditions = new ArrayList<>();
+    private List<Class<RewardCondition>> conditions = new ArrayList<>();
 
     private RewardService() {
         ctOnlineReward = CtOnlineReward.getPlugin(CtOnlineReward.class);
@@ -28,6 +30,12 @@ public class RewardService {
 
     public static RewardService getInstance() {
         return instance;
+    }
+
+    public Class<RewardCondition> getCondition(String name){
+        for (Class<RewardCondition> condition : conditions) {
+            condition.getDeclaredField()
+        }
     }
 
     public void loadRewardYamlToMemory(Map<String, ConfigurationSection> rewards) {
@@ -120,13 +128,12 @@ public class RewardService {
 
     public void registerRewardCondition() {
         List<Class<?>> subclassesOfAbstractClass = ClassUtils.getSubclassesOfAbstractClass("cn.ctcraft.ctonlinereward.pojo.rewardconditions", RewardCondition.class);
-        Logger logger = ctOnlineReward.getLogger();
         for (Class<?> ofAbstractClass : subclassesOfAbstractClass) {
             String name = ofAbstractClass.getName();
-            conditions.add(ofAbstractClass);
+            if (ofAbstractClass.isAssignableFrom(RewardCondition.class)) {
+                conditions.add((Class<RewardCondition>) ofAbstractClass);
+            }
         }
-
-
     }
 
 
