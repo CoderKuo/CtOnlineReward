@@ -1,7 +1,6 @@
 package cn.ctcraft.ctonlinereward.service;
 
 import cn.ctcraft.ctonlinereward.CtOnlineReward;
-import cn.ctcraft.ctonlinereward.LanguageHandler;
 import cn.ctcraft.ctonlinereward.pojo.RewardData;
 import cn.ctcraft.ctonlinereward.pojo.rewardconditions.RewardCondition;
 import cn.ctcraft.ctonlinereward.utils.ClassUtils;
@@ -13,7 +12,6 @@ import org.bukkit.inventory.ItemStack;
 import java.io.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
 public class RewardService {

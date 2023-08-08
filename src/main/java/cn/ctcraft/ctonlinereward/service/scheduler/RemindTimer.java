@@ -18,6 +18,11 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+/**
+ * 可领取提醒
+ * <p>
+ * 待改造
+ */
 public class RemindTimer extends BukkitRunnable {
     private final CtOnlineReward ctOnlineReward;
     //每轮检查时已经提醒过的玩家的名单

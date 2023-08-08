@@ -348,25 +348,13 @@ public class InventoryFactory {
     }
 
     private RewardStatus getRewardStatus(Player player, String rewardId) {
-//        ConfigurationSection configurationSection = YamlData.rewardYaml.getConfigurationSection(rewardId);
         ConfigurationSection rewardSection = RewardService.getInstance().getRewardSection(rewardId);
         if (rewardSection == null) {
             ctOnlineReward.getLogger().warning("§c§l■ 未找到奖励配置 §f§n" + rewardId + "§c§l 请检查reward.yml配置文件中是否有指定配置!");
             return RewardStatus.before;
         }
-        if (!rewardSection.contains("time")) {
-            return RewardStatus.before;
-        }
-        boolean timeIsOk = RewardOnlineTimeHandler.getInstance().onlineTimeIsOk(player, rewardSection.getConfigurationSection("condition"));
-        if (!timeIsOk) {
-            return RewardStatus.before;
-        }
-
-
-        if (playerRewardArray.isEmpty() || !playerRewardArray.contains(rewardId)) {
-            return RewardStatus.activation;
-        }
-        return RewardStatus.after;
+        RewardOnlineTimeHandler rewardOnlineTimeHandler = new RewardOnlineTimeHandler(player, rewardSection);
+        return rewardOnlineTimeHandler.getRewardStatus();
     }
 
 

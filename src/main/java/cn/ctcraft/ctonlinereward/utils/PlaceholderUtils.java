@@ -1,10 +1,13 @@
 package cn.ctcraft.ctonlinereward.utils;
 
 import cn.ctcraft.ctonlinereward.CtOnlineReward;
+import cn.ctcraft.ctonlinereward.LanguageHandler;
 import org.bukkit.configuration.Configuration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
 
 public class PlaceholderUtils {
     public static PlaceholderUtils instance = new PlaceholderUtils();
@@ -32,12 +35,10 @@ public class PlaceholderUtils {
         }
     }
 
-    public void insertVar(String var) {
-
-    }
 
     public String getValue(String key, Object... values) {
-        return String.format(config.getString(key), values);
+        String str = config.getString(key);
+        return CtOnlineReward.languageHandler.getValue(str, values);
     }
 
 

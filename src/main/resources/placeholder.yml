@@ -1,4 +1,25 @@
 interval:
+  # 完全形式应为 %cor_10min_interval_reminder%
   reminder:
     no-receive: '暂未领取'
-    received: '剩余时间{0}天{1}小时{2}分钟'
+    received: '剩余时间{day}天{hour}小时{min}分钟'
+today:
+  reminder:
+    before: '剩余时间{day}天{hour}小时{min}分钟'
+    activation: '可以领取'
+    after: '已经领取'
+week:
+  reminder:
+    before: '剩余时间{day}天{hour}小时{min}分钟'
+    activation: '可以领取'
+    after: '已经领取'
+month:
+  reminder:
+    before: '剩余时间{day}天{hour}小时{min}分钟'
+    activation: '可以领取'
+    after: '已经领取'
+range:
+  reminder:
+    before: '剩余时间{day}天{hour}小时{min}分钟'
+    activation: '可以领取'
+    after: '已经领取'

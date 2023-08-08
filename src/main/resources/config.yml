@@ -1,5 +1,8 @@
 version: ${project.version}
 
+#打开之后会显示更多日志信息
+debug: false
+
 database:
   #存储类型 SQLite、Mysql、Yaml
   type: yaml

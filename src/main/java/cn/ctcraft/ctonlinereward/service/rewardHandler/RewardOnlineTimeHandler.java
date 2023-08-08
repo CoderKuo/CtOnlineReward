@@ -1,9 +1,13 @@
 package cn.ctcraft.ctonlinereward.service.rewardHandler;
 
 import cn.ctcraft.ctonlinereward.CtOnlineReward;
+import cn.ctcraft.ctonlinereward.LanguageHandler;
 import cn.ctcraft.ctonlinereward.database.DataService;
+import cn.ctcraft.ctonlinereward.pojo.rewardconditions.ConditionStatus;
 import cn.ctcraft.ctonlinereward.pojo.rewardconditions.RewardCondition;
+import cn.ctcraft.ctonlinereward.pojo.rewardconditions.Stateful;
 import cn.ctcraft.ctonlinereward.service.RewardService;
+import cn.ctcraft.ctonlinereward.service.RewardStatus;
 import com.udojava.evalex.Expression;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.Configuration;
@@ -24,7 +28,7 @@ public class RewardOnlineTimeHandler {
     private ConfigurationSection rewardSection;
     private ConfigurationSection conditionSection;
 
-    private boolean timeIsOk;
+    public boolean timeIsOk = onlineTimeIsOk();
 
     private List<RewardCondition> conditionList = new ArrayList<>();
 
@@ -42,43 +46,56 @@ public class RewardOnlineTimeHandler {
                     rewardCondition.setConfig(rewardSection);
                 }
                 conditionList.add(rewardCondition);
-            }catch (Exception e) {
-                /**
-                 * 友好报错 暂未完成
-                 */
+            } catch (Exception e) {
+                CtOnlineReward.languageHandler.info(key + " condition加载失败");
                 e.printStackTrace();
             }
         }
 
     }
 
-    public boolean onlineTimeIsOk() {
-        conditionList.stream().anyMatch(rewardCondition -> {
-        })
+    public RewardStatus getRewardStatus() {
+        if (conditionList == null) {
+            return RewardStatus.before;
+        }
+        boolean isOk = onlineTimeIsOk();
+        boolean isOn = conditionList.stream().filter(rewardCondition -> Stateful.class.isAssignableFrom(rewardCondition.getClass())).allMatch(rewardCondition -> {
+            ConditionStatus status = ((Stateful) rewardCondition).getStatus();
+            return status == ConditionStatus.ON;
+        });
+
+        if (isOk && isOn) {
+            return RewardStatus.activation;
+        } else if (!isOn) {
+            return RewardStatus.after;
+        } else {
+            return RewardStatus.before;
+        }
     }
 
-    private String variablesHandler(Player player,String Formula){
-        String temp = Formula;
-        boolean hasOnlineTime = temp.contains("{onlineTime}");
-        if (hasOnlineTime){
-            int playerOnlineTime = dataService.getPlayerOnlineTime(player);
-            temp = temp.replace("{onlineTime}", String.valueOf(playerOnlineTime));
+    public boolean onlineTimeIsOk() {
+        if (conditionList == null) {
+            CtOnlineReward.languageHandler.info("{0} 奖励配置中condition不应为空", 0, rewardSection.getName());
+            return false;
         }
-        boolean hasWeekOnlineTime = temp.contains("{weekOnlineTime}");
-        if (hasWeekOnlineTime){
-            int playerOnlineTimeWeek = dataService.getPlayerOnlineTimeWeek(player);
-            temp = temp.replace("{weekOnlineTime}",String.valueOf(playerOnlineTimeWeek));
-        }
-        boolean hasMonthOnlineTime = temp.contains("{monthOnlineTime}");
-        if (hasMonthOnlineTime){
-            int playerOnlineTimeMonth = dataService.getPlayerOnlineTimeMonth(player);
-            temp = temp.replace("{monthOnlineTime}",String.valueOf(playerOnlineTimeMonth));
-        }
-        boolean hasAllOnlineTime = temp.contains("{allOnlineTime}");
-        if (hasAllOnlineTime){
-            int playerOnlineTimeAll = dataService.getPlayerOnlineTimeAll(player);
-            temp = temp.replace("{allOnlineTime}",String.valueOf(playerOnlineTimeAll));
-        }
-        return temp;
+        return conditionList.stream().allMatch(rewardCondition -> {
+            return (rewardCondition.checkFunctions(rewardSection) && rewardCondition.check());
+        });
     }
+
+    /**
+     * 解析PAPI
+     *
+     * @param placeholder 传入的PAPI占位符 示例传入值: condition_placeholderName
+     * @return 解析后的文本
+     */
+    public String getPlaceholder(String placeholder) {
+        String[] s = placeholder.split("_");
+        if (s.length != 2) {
+            throw new RuntimeException("错误的PAPI变量,请检查PAPI变量格式是否为: %cor_rewardId_condition_placeholderName%");
+        }
+        return conditionList.stream().filter(rewardCondition -> rewardCondition.getName().equalsIgnoreCase(s[0])).findFirst().map(rewardCondition -> rewardCondition.placeholder(s[1])).get();
+    }
+
+
 }

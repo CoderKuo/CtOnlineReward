@@ -1,5 +1,6 @@
 package cn.ctcraft.ctonlinereward.pojo.rewardconditions;
 
+import cn.ctcraft.ctonlinereward.service.RewardStatus;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.ConfigurationSection;
 
