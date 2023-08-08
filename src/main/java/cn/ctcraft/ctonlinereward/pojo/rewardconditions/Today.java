@@ -15,7 +15,7 @@ public class Today extends RewardCondition {
 
 
     @Override
-    boolean check() {
+    public boolean check() {
         return DataHandler.getInstance().getPlayerOnlineTime(player) >= convertTime();
     }
 

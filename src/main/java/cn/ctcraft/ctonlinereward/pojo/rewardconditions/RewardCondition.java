@@ -1,7 +1,7 @@
 package cn.ctcraft.ctonlinereward.pojo.rewardconditions;
 
 import org.bukkit.OfflinePlayer;
-import org.bukkit.configuration.Configuration;
+import org.bukkit.configuration.ConfigurationSection;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,8 +13,8 @@ public abstract class RewardCondition {
 
     public OfflinePlayer player;
     public String param;
-    public Configuration config = null;
-    private List<Function<Configuration, Boolean>> otherCheckFunctions = new ArrayList<>();
+    public ConfigurationSection config = null;
+    private List<Function<ConfigurationSection, Boolean>> otherCheckFunctions = new ArrayList<>();
     private Map<String, Function<OfflinePlayer, String>> placeholders = new ConcurrentHashMap<>();
 
     public RewardCondition(OfflinePlayer player, String param) {
@@ -56,19 +56,19 @@ public abstract class RewardCondition {
         return convertTime(param);
     }
 
-    public void addFunction(Function<Configuration, Boolean> function) {
+    public void addFunction(Function<ConfigurationSection, Boolean> function) {
         this.otherCheckFunctions.add(function);
     }
 
-    public boolean checkFunctions(Configuration configuration) {
+    public boolean checkFunctions(ConfigurationSection configuration) {
         return otherCheckFunctions.stream().allMatch(function -> function.apply(configuration));
     }
 
-    public void setConfig(Configuration config){
+    public void setConfig(ConfigurationSection config){
         this.config = config;
     }
 
-    public Configuration getConfig(){
+    public ConfigurationSection getConfig(){
         return config;
     }
 
@@ -84,5 +84,5 @@ public abstract class RewardCondition {
 
     abstract public boolean isNeedConfig();
 
-    abstract boolean check();
+    abstract public boolean check();
 }

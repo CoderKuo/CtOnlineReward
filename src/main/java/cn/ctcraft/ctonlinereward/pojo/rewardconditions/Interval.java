@@ -49,7 +49,7 @@ public class Interval extends RewardCondition {
     }
 
     @Override
-    boolean check() {
+    public boolean check() {
         addFunction(configuration -> DataHandler.getInstance().getPlayerRewardArray(player, subtractNDays(convertTime()), System.currentTimeMillis()).stream().anyMatch(reward->reward.getReward_Id().equals(configuration.getName())));
         return true;
     }

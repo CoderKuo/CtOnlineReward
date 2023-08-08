@@ -21,7 +21,7 @@ public class RewardService {
     private Map<String, ConfigurationSection> rewards = new ConcurrentHashMap<>();
     CtOnlineReward ctOnlineReward;
 
-    private List<Class<RewardCondition>> conditions = new ArrayList<>();
+    private List<Class<? extends RewardCondition>> conditions = new ArrayList<>();
 
     private RewardService() {
         ctOnlineReward = CtOnlineReward.getPlugin(CtOnlineReward.class);
@@ -32,10 +32,13 @@ public class RewardService {
         return instance;
     }
 
-    public Class<RewardCondition> getCondition(String name){
-        for (Class<RewardCondition> condition : conditions) {
-            condition.getDeclaredField()
+    public Class<? extends RewardCondition> getCondition(String name){
+        for (Class<? extends RewardCondition> condition : conditions) {
+            if (condition.getSimpleName().equalsIgnoreCase(name)){
+                return condition;
+            }
         }
+        return null;
     }
 
     public void loadRewardYamlToMemory(Map<String, ConfigurationSection> rewards) {
@@ -129,10 +132,7 @@ public class RewardService {
     public void registerRewardCondition() {
         List<Class<?>> subclassesOfAbstractClass = ClassUtils.getSubclassesOfAbstractClass("cn.ctcraft.ctonlinereward.pojo.rewardconditions", RewardCondition.class);
         for (Class<?> ofAbstractClass : subclassesOfAbstractClass) {
-            String name = ofAbstractClass.getName();
-            if (ofAbstractClass.isAssignableFrom(RewardCondition.class)) {
-                conditions.add((Class<RewardCondition>) ofAbstractClass);
-            }
+            conditions.add((Class<? extends RewardCondition>) ofAbstractClass);
         }
     }
 

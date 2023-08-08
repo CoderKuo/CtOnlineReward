@@ -51,7 +51,7 @@ public class Range extends RewardCondition {
     }
 
     @Override
-    boolean check() {
+    public boolean check() {
         Pair<Long, Long> startAndEndTime = getStartAndEndTime();
         return DataHandler.getInstance().getPlayerOnlineTimeFromRange(player, startAndEndTime.first, startAndEndTime.second) >= convertTime(JsonUtils.parse(param).getString("target"));
     }

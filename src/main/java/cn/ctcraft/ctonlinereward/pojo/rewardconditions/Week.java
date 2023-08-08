@@ -23,7 +23,7 @@ public class Week extends RewardCondition {
     }
 
     @Override
-    boolean check() {
+    public boolean check() {
         return DataHandler.getInstance().getPlayerOnlineTimeWeek(player) >= convertTime();
     }
 }

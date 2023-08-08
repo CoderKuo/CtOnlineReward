@@ -24,7 +24,7 @@ public class Month extends RewardCondition {
     }
 
     @Override
-    boolean check() {
+    public boolean check() {
         return DataHandler.getInstance().getPlayerOnlineTimeMonth(player) >= convertTime();
     }
 }
