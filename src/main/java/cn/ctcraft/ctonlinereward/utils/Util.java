@@ -23,20 +23,23 @@ public class Util {
         return Bukkit.getServer().getClass().getPackage().getName().replace("org.bukkit.craftbukkit.","");
     }
 
-    public static List<String> getWeekString(){
+    public static List<String> getWeekString() {
         List<String> list = new ArrayList<>();
         SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
         Calendar cal = Calendar.getInstance();
         cal.setTimeInMillis(System.currentTimeMillis());
-        int dayOfWeek = cal.get(Calendar.DAY_OF_WEEK);
-        if (cal.getFirstDayOfWeek() == Calendar.SUNDAY) {
-            cal.add(Calendar.DAY_OF_WEEK,1);
-        }
-        cal.add(Calendar.DAY_OF_MONTH,-dayOfWeek);
+
+        // Set the first day of the week to Sunday
+        cal.set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY);
+
+        // Calculate the start of the week
+        cal.set(Calendar.DAY_OF_WEEK, cal.getFirstDayOfWeek());
+
         for (int i = 1; i <= 7; i++) {
-            cal.add(Calendar.DAY_OF_MONTH,1);
-           list.add(sdf.format(cal.getTime()));
+            list.add(sdf.format(cal.getTime()));
+            cal.add(Calendar.DAY_OF_MONTH, 1);
         }
+
         return list;
     }
 
