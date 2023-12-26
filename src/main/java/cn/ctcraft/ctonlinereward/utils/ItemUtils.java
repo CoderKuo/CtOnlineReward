@@ -1,5 +1,7 @@
 package cn.ctcraft.ctonlinereward.utils;
 
+import com.cryptomorin.xseries.SkullUtils;
+import com.cryptomorin.xseries.XMaterial;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
 import org.bukkit.Bukkit;
@@ -12,12 +14,12 @@ import java.lang.reflect.Field;
 import java.util.UUID;
 
 public class ItemUtils {
-    public static ItemStack crearSkull(String textura) {
+    public static ItemStack createSkull(String textura) {
         ItemStack item = null;
         if (esLegacy()) {
-            item = new ItemStack(Material.valueOf("SKULL_ITEM"), 1, (short)3);
+            item = new ItemStack(XMaterial.matchXMaterial("SKULL_ITEM").get().parseMaterial(), 1, (short)3);
         } else {
-            item = new ItemStack(Material.valueOf("PLAYER_HEAD"));
+            item = new ItemStack(XMaterial.matchXMaterial("PLAYER_HEAD").get().parseMaterial());
         }
         if (textura.isEmpty())
             return item;
@@ -39,7 +41,7 @@ public class ItemUtils {
         if (Bukkit.getVersion().contains("1.13") || Bukkit.getVersion().contains("1.14") ||
                 Bukkit.getVersion().contains("1.15") || Bukkit.getVersion().contains("1.16") ||
                 Bukkit.getVersion().contains("1.17") || Bukkit.getVersion().contains("1.18") ||
-                Bukkit.getVersion().contains("1.19"))
+                Bukkit.getVersion().contains("1.19") || Bukkit.getVersion().contains("1.20"))
             return false;
         return true;
     }

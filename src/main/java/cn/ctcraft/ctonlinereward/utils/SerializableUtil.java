@@ -3,12 +3,12 @@ package cn.ctcraft.ctonlinereward.utils;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.util.io.BukkitObjectInputStream;
 import org.bukkit.util.io.BukkitObjectOutputStream;
-import org.yaml.snakeyaml.external.biz.base64Coder.Base64Coder;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.Base64;
 
 public class SerializableUtil {
 
@@ -25,7 +25,8 @@ public class SerializableUtil {
 
 
     public <T> T singleObjectFromString(String serialized, Class<T> classOfT) throws IOException {
-        return singleObjectFromByteArray(Base64Coder.decodeLines(serialized), classOfT);
+
+        return singleObjectFromByteArray(Base64.getDecoder().decode(serialized), classOfT);
     }
 
     @SuppressWarnings("unchecked")
@@ -50,7 +51,7 @@ public class SerializableUtil {
         byte[] raw = singleObjectToByteArray(object);
 
         if (raw != null) {
-            return Base64Coder.encodeLines(raw);
+            return Base64.getEncoder().encodeToString(raw);
         }
 
         return null;

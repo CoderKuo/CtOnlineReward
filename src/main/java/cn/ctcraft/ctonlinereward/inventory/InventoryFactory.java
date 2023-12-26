@@ -10,6 +10,7 @@ import cn.ctcraft.ctonlinereward.service.rewardHandler.RewardOnlineTimeHandler;
 import cn.ctcraft.ctonlinereward.utils.ItemUtils;
 import cn.ctcraft.ctonlinereward.utils.Position;
 import cn.ctcraft.ctonlinereward.utils.Util;
+import com.cryptomorin.xseries.XMaterial;
 import me.clip.placeholderapi.PlaceholderAPI;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -241,7 +242,7 @@ public class InventoryFactory {
         String type = config.getString("type.name", "chest");
         if (type.equalsIgnoreCase("skull")) {
             String skull = config.getString("type.skull");
-            itemStack = ItemUtils.crearSkull(skull);
+            itemStack = ItemUtils.createSkull(skull);
         } else {
             itemStack = getItemStackByNMS(type);
         }
@@ -261,17 +262,19 @@ public class InventoryFactory {
     }
 
     private ItemStack getItemStackByNMS(String name) {
-        if (isInteger(name)) {
-            return new ItemStack(Material.getMaterial(Integer.parseInt(name)));
+        String nName = name.toLowerCase();
+        if (isInteger(nName)) {
+            return new ItemStack(XMaterial.matchXMaterial(nName).get().parseMaterial());
         }
 
-        if (name.startsWith("minecraft:")) {
-            String materialName = name.substring(10).toUpperCase();
-            Material material = Material.getMaterial(materialName);
-            if (material != null) {
+        if (nName.startsWith("minecraft:")) {
+            String materialName = nName.substring(10).toUpperCase();
+            Material material = XMaterial.matchXMaterial(materialName).get().parseMaterial();
+            if (material == null){
+                return null;
+            }else{
                 return new ItemStack(material);
             }
-            return null;
         }
 
         String versionString = Util.getVersionString();
@@ -290,10 +293,10 @@ public class InventoryFactory {
             Object invoke;
             try {
                 Method b = itemClass.getMethod("b", String.class);
-                invoke = b.invoke(itemClass, name);
+                invoke = b.invoke(itemClass, nName);
             } catch (NoSuchMethodException e) {
                 Object itemRegistry = Class.forName(className + "IRegistry").getField("ITEM").get(null);
-                Object key = Class.forName(className + "MinecraftKey").getConstructor(String.class).newInstance(name);
+                Object key = Class.forName(className + "MinecraftKey").getConstructor(String.class).newInstance(nName);
                 Method getMethod = itemRegistry.getClass().getMethod("get", Class.forName(className + "MinecraftKey"));
                 invoke = getMethod.invoke(itemRegistry, key);
             }

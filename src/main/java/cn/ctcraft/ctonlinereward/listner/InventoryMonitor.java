@@ -9,6 +9,7 @@ import cn.ctcraft.ctonlinereward.inventory.InventoryFactory;
 import cn.ctcraft.ctonlinereward.inventory.MainInventoryHolder;
 import cn.ctcraft.ctonlinereward.service.RewardService;
 import cn.ctcraft.ctonlinereward.service.RewardStatus;
+import cn.ctcraft.ctonlinereward.service.YamlService;
 import me.clip.placeholderapi.PlaceholderAPI;
 import net.milkbowl.vault.economy.EconomyResponse;
 import org.black_ixx.playerpoints.PlayerPointsAPI;
@@ -119,17 +120,16 @@ public class InventoryMonitor implements Listener {
             return;
         }
 
-        List<String> playerRewardArray = CtOnlineReward.dataService.getPlayerRewardArray(player);
-        if (playerRewardArray.contains(rewardEntity.getRewardID())) {
+
             if (holder instanceof MainInventoryHolder) {
                 Inventory build = InventoryFactory.build(((MainInventoryHolder) holder).inventoryID, player);
                 player.openInventory(build);
+            }else {
+                return;
             }
-            return;
-        }
-
         try {
             if (permissionHandler(rewardEntity.getRewardID(), player)) {
+
                 List<ItemStack> itemStackFromRewardId = rewardService.getItemStackFromRewardId(rewardEntity.getRewardID());
                 DataService playerDataService = CtOnlineReward.dataService;
 
@@ -140,11 +140,6 @@ public class InventoryMonitor implements Listener {
                 }
 
                 if (playerDataService.addRewardToPlayData(rewardEntity.getRewardID(), player)) {
-                    Sound sound = getSound(rewardEntity.getRewardID());
-                    if (sound != null) {
-                        player.playSound(player.getLocation(), sound, 1F, 1F);
-                    }
-
                     if (itemStackFromRewardId != null) {
                         givePlayerItem(itemStackFromRewardId, player);
                     }
@@ -165,27 +160,19 @@ public class InventoryMonitor implements Listener {
 
 
     private boolean permissionHandler(String rewardId, Player player) {
-        YamlConfiguration rewardYaml = YamlData.rewardYaml;
-        if (!rewardYaml.contains(rewardId)) {
-            return true;
-        }
-        ConfigurationSection configurationSection = rewardYaml.getConfigurationSection(rewardId);
-        String permission = configurationSection.getString("permission");
+        ConfigurationSection rewardSection = YamlData.rewardYaml.getConfigurationSection(rewardId);
+        String permission = rewardSection.getString("permission");
         return permission == null || player.hasPermission(permission);
     }
 
 
     private void action(String rewardID, Player player) {
-        YamlConfiguration rewardYaml = YamlData.rewardYaml;
-        if (!rewardYaml.contains(rewardID)) {
+        ConfigurationSection rewardSection = YamlData.rewardYaml.getConfigurationSection(rewardID);
+        if (!rewardSection.contains("receiveAction")) {
             return;
         }
-        ConfigurationSection configurationSection = rewardYaml.getConfigurationSection(rewardID);
-        if (!configurationSection.contains("receiveAction")) {
-            return;
-        }
-        List<String> receiveAction = configurationSection.getStringList("receiveAction");
-        receiveAction.forEach(action -> actionHandler(action, player, configurationSection));
+        List<String> receiveAction = rewardSection.getStringList("receiveAction");
+        receiveAction.forEach(action -> actionHandler(action, player, rewardSection));
     }
 
 
@@ -220,26 +207,12 @@ public class InventoryMonitor implements Listener {
         }
     }
 
-
-    private Sound getSound(String rewardID) {
-        YamlConfiguration rewardYaml = YamlData.rewardYaml;
-        if (!rewardYaml.contains(rewardID + ".sound")) {
-            return null;
-        }
-        String sound = rewardYaml.getString(rewardID + ".sound");
-        try {
-            return Sound.valueOf(sound);
-        } catch (IllegalArgumentException e) {
-            return null;
-        }
-    }
-
     private void giveMoney(Player player, String rewardID) {
-        YamlConfiguration rewardYaml = YamlData.rewardYaml;
-        if (!rewardYaml.contains(rewardID + ".economy")) {
+        ConfigurationSection rewardSection = YamlData.rewardYaml.getConfigurationSection(rewardID);
+        if (!rewardSection.contains("economy")) {
             return;
         }
-        ConfigurationSection economy = rewardYaml.getConfigurationSection(rewardID + ".economy");
+        ConfigurationSection economy = rewardSection.getConfigurationSection( "economy");
         if (economy.contains("money")) {
             double money = economy.getDouble("money");
             CtOnlineReward.economy.depositPlayer(player, money);
@@ -256,11 +229,11 @@ public class InventoryMonitor implements Listener {
     }
 
     private void executeCommand(String rewardID, Player player) {
-        YamlConfiguration rewardYaml = YamlData.rewardYaml;
-        if (!rewardYaml.contains(rewardID + ".command")) {
+        ConfigurationSection rewardSection = YamlData.rewardYaml.getConfigurationSection(rewardID);
+        if (!rewardSection.contains("command")) {
             return;
         }
-        ConfigurationSection command = rewardYaml.getConfigurationSection(rewardID + ".command");
+        ConfigurationSection command = rewardSection.getConfigurationSection("command");
         List<String> playerCommands = command.getStringList("PlayerCommands");
         List<String> list = PlaceholderAPI.setPlaceholders(player, playerCommands);
         for (String s : list) {

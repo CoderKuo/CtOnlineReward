@@ -53,9 +53,9 @@ public class MysqlBase implements DataService {
     public int getPlayerOnlineTime(OfflinePlayer player) {
         JsonObject playerOnlineData = getPlayerOnlineData(player);
         JsonElement time = playerOnlineData.get("time");
-        int onlineTime = time != null ? time.getAsInt() : 0;
+        int onlineTime = time != null ? time.getAsInt() : -1;
 
-        if (onlineTime == 0) {
+        if (onlineTime == -1) {
             insertPlayerOnlineTime(player, 0);
         }
 
